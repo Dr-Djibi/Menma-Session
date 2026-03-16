@@ -31,8 +31,17 @@
                     appareil :
                 </p>
                 <div id="pair-code" class="code-box">--------</div>
+                <button class="btn btn-primary" id="copy-pair-btn" style="margin-top: 10px; width: 100%; display: none;">
+                    <i class="fas fa-copy"></i> COPIER LE CODE
+                </button>
 
-                <div style="margin-top: 30px;">
+                <div id="status-container" style="display: none; margin-top: 20px;">
+                    <button class="btn btn-primary" id="copy-session-btn" style="margin-top: 10px; width: 100%;">
+                        <i class="fas fa-copy"></i> COPIER L'ID SESSION
+                    </button>
+                </div>
+
+                <div id="loading-spinner" style="margin-top: 30px;">
                     <i class="fas fa-circle-notch fa-spin" style="color: var(--gold);"></i>
                 </div>
             </div>
@@ -43,16 +52,10 @@
         </div>
     </div>
 
-    <script>
-        const getCodeBtn = document.getElementById('get-code-btn');
-        const numberInput = document.getElementById('phone-number'); // Changed from 'number' to 'phone-number' to match HTML
-        const loadingSection = document.getElementById('pair-display-section'); // Re-using this for loading state
-        const inputSection = document.getElementById('pair-input-section');
-        const pairDisplaySection = document.getElementById('pair-display-section');
-        const pairCodeElement = document.getElementById('pair-code');
-        const instruction = pairDisplaySection.querySelector('p');
-
-        let pollingId = null;
+        const copyPairBtn = document.getElementById('copy-pair-btn');
+        const copySessionBtn = document.getElementById('copy-session-btn');
+        const statusContainer = document.getElementById('status-container');
+        const loadingSpinner = document.getElementById('loading-spinner');
 
         getCodeBtn.onclick = async () => {
             const num = numberInput.value.trim();
@@ -65,6 +68,9 @@
             pairCodeElement.textContent = '--------'; // Reset code display
             pairCodeElement.style.fontSize = ''; // Reset font size
             pairCodeElement.style.wordBreak = ''; // Reset word break
+            copyPairBtn.style.display = 'none';
+            statusContainer.style.display = 'none';
+            loadingSpinner.style.display = 'block';
 
             try {
                 const response = await fetch('/api/pair?number=' + num);
@@ -73,6 +79,7 @@
                 loadingSection.style.display = 'none';
                 pairDisplaySection.style.display = 'block';
                 pairCodeElement.textContent = data.code;
+                copyPairBtn.style.display = 'block';
                 pollingId = data.id;
 
                 checkPairingStatus();
@@ -90,12 +97,16 @@
                 const data = await response.json();
 
                 if (data.status === 'success') {
+                    loadingSpinner.style.display = 'none';
+                    copyPairBtn.style.display = 'none';
                     pairCodeElement.textContent = data.session;
                     pairCodeElement.style.fontSize = '0.9rem';
                     pairCodeElement.style.wordBreak = 'break-all';
                     instruction.textContent = 'SESSION CONNECTÉE ! Voici votre ID :';
                     instruction.style.color = '#2ecc71';
+                    statusContainer.style.display = 'block';
                 } else if (data.status === 'error') {
+                    loadingSpinner.style.display = 'none';
                     instruction.textContent = 'ERREUR DE SESSION';
                     instruction.style.color = '#e74c3c';
                 } else {
@@ -105,6 +116,22 @@
                 setTimeout(checkPairingStatus, 5000);
             }
         }
+
+        copyPairBtn.onclick = () => {
+            navigator.clipboard.writeText(pairCodeElement.textContent);
+            copyPairBtn.innerHTML = '<i class="fas fa-check"></i> COPIÉ !';
+            setTimeout(() => {
+                copyPairBtn.innerHTML = '<i class="fas fa-copy"></i> COPIER LE CODE';
+            }, 2000);
+        };
+
+        copySessionBtn.onclick = () => {
+            navigator.clipboard.writeText(pairCodeElement.textContent);
+            copySessionBtn.innerHTML = '<i class="fas fa-check"></i> COPIÉ !';
+            setTimeout(() => {
+                copySessionBtn.innerHTML = '<i class="fas fa-copy"></i> COPIER L\'ID SESSION';
+            }, 2000);
+        };
     </script>
 </body>
 

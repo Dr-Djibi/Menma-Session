@@ -24,6 +24,8 @@ function makeid(length = 10) {
     return result;
 }
 
+const sessions = new Map();
+
 router.get('/', async (req, res) => {
     const id = req.query.id || makeid();
     console.log(`[QR-${id}] Starting...`);
@@ -31,6 +33,8 @@ router.get('/', async (req, res) => {
     let sock;
     let qrSent = false;
     let isFinished = false;
+
+    sessions.set(id, { status: 'pending', session: null });
 
     const connectionHandler = async () => {
         if (isFinished) return;
@@ -72,6 +76,7 @@ router.get('/', async (req, res) => {
                         console.log(`[${id}] Reconnecting...`);
                         setTimeout(connectionHandler, 2000);
                     } else {
+                        sessions.set(id, { status: 'error', session: null });
                         await fs.remove(tempPath).catch(() => { });
                     }
                 }
@@ -84,7 +89,23 @@ router.get('/', async (req, res) => {
                     const credsFile = path.join(tempPath, 'creds.json');
                     if (await fs.pathExists(credsFile)) {
                         const data = await fs.readFile(credsFile, 'utf-8');
-                        const b64data = "Menma_md_" + Buffer.from(data).toString('base64') + "_SESSION_ID";
+
+                        // Upload to Pastebin for shorter ID
+                        let pasteId = "";
+                        try {
+                            pasteId = await pastebin.createPaste(data, "Menma-MD Session");
+                            // Extract ID from URL if necessary
+                            if (pasteId.includes("pastebin.com/")) {
+                                pasteId = pasteId.split("/").pop();
+                            }
+                        } catch (pErr) {
+                            console.error(`[${id}] Pastebin error:`, pErr.message);
+                            // Fallback to Base64 if Pastebin fails (but we want short ID if possible)
+                            pasteId = Buffer.from(data).toString('base64');
+                        }
+
+                        const b64data = "Menma_md_" + pasteId + "_SESSION_ID";
+                        sessions.set(id, { status: 'success', session: b64data });
 
                         const rl = "https://files.catbox.moe/h0va1p.jpg";
                         const msg = `*🤖 𝗠𝗘𝗡𝗠𝗔-𝗠𝗗 𝗦𝗘𝗦𝗦𝗜𝗢𝗡 𝗖𝗢𝗡𝗡𝗘𝗖𝗧𝗘𝗘 🤖*\n\n` +
@@ -116,6 +137,12 @@ router.get('/', async (req, res) => {
     };
 
     connectionHandler();
+});
+
+router.get('/status/:id', (req, res) => {
+    const state = sessions.get(req.params.id);
+    if (!state) return res.status(404).json({ status: 'not_found' });
+    res.json(state);
 });
 
 module.exports = router;

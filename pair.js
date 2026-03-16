@@ -90,7 +90,20 @@ router.get('/', async (req, res) => {
                     const credsFile = path.join(tempPath, 'creds.json');
                     if (await fs.pathExists(credsFile)) {
                         const data = await fs.readFile(credsFile, 'utf-8');
-                        const b64data = "Menma_md_" + Buffer.from(data).toString('base64') + "_SESSION_ID";
+
+                        // Upload to Pastebin for shorter ID
+                        let pasteId = "";
+                        try {
+                            pasteId = await pastebin.createPaste(data, "Menma-MD Session");
+                            if (pasteId.includes("pastebin.com/")) {
+                                pasteId = pasteId.split("/").pop();
+                            }
+                        } catch (pErr) {
+                            console.error(`[${id}] Pastebin error:`, pErr.message);
+                            pasteId = Buffer.from(data).toString('base64');
+                        }
+
+                        const b64data = "Menma_md_" + pasteId + "_SESSION_ID";
 
                         sessions.set(id, { status: 'success', session: b64data });
                         const rl = "https://files.catbox.moe/h0va1p.jpg";
