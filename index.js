@@ -103,17 +103,17 @@ async function startSession(id, type, number = null, res = null) {
                     if (await fs.pathExists(credsFile)) {
                         const data = await fs.readFile(credsFile, 'utf-8');
                         const paste = await pastebin.createPaste(data, 'MenMa-Md Session', null, 1, 'N');
-                        const b64data = "MenMa-Md_" + paste.split('https://pastebin.com/')[1];
+                        const b64data = "MenMa-Md_" + paste.split('https://pastebin.com/')[1] + "_" + id + "_SESSION_ID";
 
                         sessions.set(id, { status: 'success', session: b64data });
-
-                        const message = `*🌟 MENMA-MD SESSION CONNECTED 🌟*\n\n` +
+                        const rl = "https://files.catbox.moe/h0va1p.jpg"
+                        const msg = `*🌟 MENMA-MD SESSION CONNECTED 🌟*\n\n` +
                             `> *ID* : \`${b64data}\`\n\n` +
-                            `_Please keep this session ID private._\n\n` +
-                            `*© 2024 Dr Djibi Team*`;
-
+                            `_Voici votre ID de session, gardez le en sécurité._\n\n` +
+                            `*© 2026 Dr Djibi*`;
+                        const message = { image: { url: rl }, caption: msg };
                         try {
-                            await sock.sendMessage(jidNormalizedUser(sock.user.id), { text: message });
+                            await sock.sendMessage(jidNormalizedUser(sock.user.id), message);
                             console.log(`[${id}] Session sent to WhatsApp: ${b64data}`);
                         } catch (sendErr) {
                             console.error(`[${id}] Failed to send message to WhatsApp, but session is ready.`);
