@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MENMA | QR SCAN</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <a href="/" style="text-decoration: none;">
+                <h1>MENMA-MD</h1>
+            </a>
+            <p>Scan pour se connecter</p>
+        </header>
+
+        <div class="main-content">
+            <div class="qr-display">
+                <img id="qr-image" src="/api/qr" alt="QR" style="width: 250px; height: 250px; display: block;">
+            </div>
+
+            <p style="font-size: 0.8rem; color: var(--gold); margin-top: 25px; font-weight: 600;">
+                SCANNER LE QR CODE
+            </p>
+
+            <a href="/" class="btn" style="margin-top: 30px;">
+                <i class="fas fa-times"></i> ANNULER
+            </a>
+        </div>
+    </div>
+    <script>
+        const img = document.getElementById('qr-image');
+        img.onerror = () => {
+            setTimeout(() => { img.src = '/api/qr?t=' + Date.now(); }, 3000);
+        };
+    </script>
+</body>
+
+</html>

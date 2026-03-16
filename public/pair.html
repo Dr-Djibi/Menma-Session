@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MENMA | PAIRING</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <a href="/" style="text-decoration: none;">
+                <h1>MENMA-MD</h1>
+            </a>
+            <p>Initialisation du code de parainage</p>
+        </header>
+
+        <div class="main-content">
+            <div id="pair-input-section">
+                <input type="text" id="phone-number" placeholder="224XXXXXXXXX">
+                <button id="get-code-btn" class="btn btn-primary">
+                    GET CODE
+                </button>
+            </div>
+
+            <div id="pair-display-section" style="display: none; text-align: center;">
+                <p style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 20px;">Utiliser ce code sur votre
+                    appareil :
+                </p>
+                <div id="pair-code" class="code-box">--------</div>
+
+                <div style="margin-top: 30px;">
+                    <i class="fas fa-circle-notch fa-spin" style="color: var(--gold);"></i>
+                </div>
+            </div>
+
+            <a href="/" class="btn" style="margin-top: 30px;">
+                <i class="fas fa-arrow-left"></i> RETOUR
+            </a>
+        </div>
+    </div>
+
+    <script>
+        const getCodeBtn = document.getElementById('get-code-btn');
+        const phoneInput = document.getElementById('phone-number');
+        const inputSection = document.getElementById('pair-input-section');
+        const displaySection = document.getElementById('pair-display-section');
+        const codeBox = document.getElementById('pair-code');
+
+        getCodeBtn.addEventListener('click', async () => {
+            const number = phoneInput.value.trim();
+            if (!number) return;
+
+            getCodeBtn.disabled = true;
+            getCodeBtn.innerText = "WAITING...";
+
+            try {
+                const response = await fetch(`/api/pair?number=${number}`);
+                const data = await response.json();
+
+                if (data.code) {
+                    inputSection.style.display = 'none';
+                    displaySection.style.display = 'block';
+                    codeBox.innerText = data.code;
+                } else {
+                    alert("ERROR: TRY AGAIN");
+                    getCodeBtn.disabled = false;
+                    getCodeBtn.innerText = "GET CODE";
+                }
+            } catch (err) {
+                alert("NETWORK ERROR");
+                getCodeBtn.disabled = false;
+                getCodeBtn.innerText = "GET CODE";
+            }
+        });
+    </script>
+</body>
+
+</html>
