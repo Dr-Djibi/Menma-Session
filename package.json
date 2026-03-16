@@ -3,21 +3,22 @@
   "version": "1.0.0",
   "description": "Menma-MD Standalone Session Generator",
   "main": "index.js",
-  "type": "module",
   "scripts": {
     "start": "node index.js"
   },
   "dependencies": {
-    "@whiskeysockets/baileys": "7.0.0-rc.9",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "fs-extra": "^11.3.0",
-    "pino": "^9.6.0",
+    "ovl_wa_baileys": "^1.0.1",
     "pastebin-js": "^1.0.6",
     "path": "^0.12.7",
+    "pino": "^9.6.0",
     "qrcode": "^1.5.4",
+    "sequelize": "^6.37.8",
     "socket.io": "^4.8.1",
+    "sqlite3": "^6.0.1",
     "url": "^0.11.4"
   }
 }
