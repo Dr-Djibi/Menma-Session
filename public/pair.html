@@ -45,37 +45,66 @@
 
     <script>
         const getCodeBtn = document.getElementById('get-code-btn');
-        const phoneInput = document.getElementById('phone-number');
+        const numberInput = document.getElementById('phone-number'); // Changed from 'number' to 'phone-number' to match HTML
+        const loadingSection = document.getElementById('pair-display-section'); // Re-using this for loading state
         const inputSection = document.getElementById('pair-input-section');
-        const displaySection = document.getElementById('pair-display-section');
-        const codeBox = document.getElementById('pair-code');
+        const pairDisplaySection = document.getElementById('pair-display-section');
+        const pairCodeElement = document.getElementById('pair-code');
+        const instruction = pairDisplaySection.querySelector('p');
 
-        getCodeBtn.addEventListener('click', async () => {
-            const number = phoneInput.value.trim();
-            if (!number) return;
+        let pollingId = null;
 
-            getCodeBtn.disabled = true;
-            getCodeBtn.innerText = "WAITING...";
+        getCodeBtn.onclick = async () => {
+            const num = numberInput.value.trim();
+            if (!num) return;
+
+            inputSection.style.display = 'none';
+            loadingSection.style.display = 'block';
+            instruction.textContent = 'Utiliser ce code sur votre appareil :'; // Reset instruction
+            instruction.style.color = 'var(--text-dim)'; // Reset color
+            pairCodeElement.textContent = '--------'; // Reset code display
+            pairCodeElement.style.fontSize = ''; // Reset font size
+            pairCodeElement.style.wordBreak = ''; // Reset word break
 
             try {
-                const response = await fetch(`/api/pair?number=${number}`);
+                const response = await fetch('/api/pair?number=' + num);
                 const data = await response.json();
 
-                if (data.code) {
-                    inputSection.style.display = 'none';
-                    displaySection.style.display = 'block';
-                    codeBox.innerText = data.code;
+                loadingSection.style.display = 'none';
+                pairDisplaySection.style.display = 'block';
+                pairCodeElement.textContent = data.code;
+                pollingId = data.id;
+
+                checkPairingStatus();
+            } catch (err) {
+                loadingSection.style.display = 'none';
+                inputSection.style.display = 'block';
+                alert("Erreur lors de la demande du code.");
+            }
+        };
+
+        async function checkPairingStatus() {
+            if (!pollingId) return;
+            try {
+                const response = await fetch('/api/status/' + pollingId);
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    pairCodeElement.textContent = data.session;
+                    pairCodeElement.style.fontSize = '0.9rem';
+                    pairCodeElement.style.wordBreak = 'break-all';
+                    instruction.textContent = 'SESSION CONNECTÉE ! Voici votre ID :';
+                    instruction.style.color = '#2ecc71';
+                } else if (data.status === 'error') {
+                    instruction.textContent = 'ERREUR DE SESSION';
+                    instruction.style.color = '#e74c3c';
                 } else {
-                    alert("ERROR: TRY AGAIN");
-                    getCodeBtn.disabled = false;
-                    getCodeBtn.innerText = "GET CODE";
+                    setTimeout(checkPairingStatus, 4000);
                 }
             } catch (err) {
-                alert("NETWORK ERROR");
-                getCodeBtn.disabled = false;
-                getCodeBtn.innerText = "GET CODE";
+                setTimeout(checkPairingStatus, 5000);
             }
-        });
+        }
     </script>
 </body>
 
