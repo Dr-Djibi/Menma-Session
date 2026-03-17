@@ -19,56 +19,84 @@
         </header>
 
         <div class="main-content">
+            <!-- Section résultat (SESSION ID + copy) -->
             <div id="status-container" style="display: none; margin-bottom: 20px;">
+                <p id="success-label" style="color: #2ecc71; font-weight: bold; margin-bottom: 10px;">✅ CONNEXION RÉUSSIE !</p>
                 <div class="code-box" id="result-id"
                     style="font-size: 0.9rem; word-break: break-all; padding: 15px; border: 1px solid var(--gold-primary);">
                     Génération en cours...
                 </div>
                 <button class="btn btn-primary" id="copy-btn" style="margin-top: 10px; width: 100%;">
-                    <i class="fas fa-copy"></i> COPIER L'ID
+                    <i class="fas fa-copy"></i> COPIER L'ID SESSION
                 </button>
+                <a href="/qr" class="btn" style="margin-top: 10px; width: 100%; display: block; text-align: center;">
+                    <i class="fas fa-redo"></i> NOUVELLE SESSION
+                </a>
             </div>
 
-            <div class="qr-display" id="qr-container">
-                <img id="qr-image" src="" alt="QR" style="width: 250px; height: 250px; display: block;">
+            <!-- Section QR code -->
+            <div id="qr-section">
+                <div class="qr-display" id="qr-container">
+                    <img id="qr-image" src="" alt="QR" style="width: 250px; height: 250px; display: block;">
+                    <div id="qr-loader" style="display: none; color: var(--gold); font-size: 2rem; margin: 30px auto;">
+                        <i class="fas fa-circle-notch fa-spin"></i>
+                    </div>
+                </div>
+
+                <p id="qr-instruction" style="font-size: 0.8rem; color: var(--gold); margin-top: 25px; font-weight: 600;">
+                    SCANNER LE QR CODE
+                </p>
+
+                <div style="display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; justify-content: center;">
+                    <button id="retry-btn" class="btn btn-primary">
+                        <i class="fas fa-redo"></i> RÉESSAYER
+                    </button>
+                    <a href="/" class="btn" id="cancel-btn">
+                        <i class="fas fa-times"></i> ANNULER
+                    </a>
+                </div>
             </div>
-
-            <p id="qr-instruction" style="font-size: 0.8rem; color: var(--gold); margin-top: 25px; font-weight: 600;">
-                SCANNER LE QR CODE
-            </p>
-
-            <a href="/" class="btn" id="cancel-btn" style="margin-top: 30px;">
-                <i class="fas fa-times"></i> ANNULER
-            </a>
         </div>
     </div>
+
     <script>
-        const sessionId = 'QR_' + Math.random().toString(36).substring(2, 12);
+        let sessionId = 'QR_' + Math.random().toString(36).substring(2, 12);
         const img = document.getElementById('qr-image');
         const qrContainer = document.getElementById('qr-container');
         const statusContainer = document.getElementById('status-container');
         const resultId = document.getElementById('result-id');
         const instruction = document.getElementById('qr-instruction');
-        const cancelBtn = document.getElementById('cancel-btn');
         const copyBtn = document.getElementById('copy-btn');
+        const retryBtn = document.getElementById('retry-btn');
+        const qrSection = document.getElementById('qr-section');
+        const qrLoader = document.getElementById('qr-loader');
+        let polling = true;
 
-        img.src = '/api/qr?id=' + sessionId;
+        function loadQR() {
+            polling = true;
+            img.style.display = 'block';
+            qrLoader.style.display = 'none';
+            instruction.textContent = 'SCANNER LE QR CODE';
+            instruction.style.color = 'var(--gold)';
+            img.src = '/api/qr?id=' + sessionId;
+            checkStatus();
+        }
 
         async function checkStatus() {
+            if (!polling) return;
             try {
-                const response = await fetch('/api/status/' + sessionId);
+                const response = await fetch('/api/qr/status/' + sessionId);
+                if (!response.ok) { setTimeout(checkStatus, 3000); return; }
                 const data = await response.json();
 
                 if (data.status === 'success') {
-                    qrContainer.style.display = 'none';
-                    instruction.textContent = 'CONNEXION RÉUSSIE !';
-                    instruction.style.color = '#2ecc71';
+                    polling = false;
+                    qrSection.style.display = 'none';
                     statusContainer.style.display = 'block';
                     resultId.textContent = data.session;
-                    cancelBtn.innerHTML = '<i class="fas fa-check"></i> TERMINER';
-                    cancelBtn.className = 'btn btn-primary';
                 } else if (data.status === 'error') {
-                    instruction.textContent = 'ERREUR DE SESSION';
+                    polling = false;
+                    instruction.textContent = 'ERREUR. Cliquez sur RÉESSAYER.';
                     instruction.style.color = '#e74c3c';
                 } else {
                     setTimeout(checkStatus, 3000);
@@ -78,18 +106,30 @@
             }
         }
 
-        checkStatus();
+        loadQR();
+
+        retryBtn.onclick = () => {
+            sessionId = 'QR_' + Math.random().toString(36).substring(2, 12);
+            loadQR();
+        };
+
+        img.onerror = () => {
+            img.style.display = 'none';
+            qrLoader.style.display = 'block';
+            instruction.textContent = 'Chargement...';
+            setTimeout(() => {
+                img.src = '/api/qr?id=' + sessionId + '&t=' + Date.now();
+                img.style.display = 'block';
+                qrLoader.style.display = 'none';
+            }, 4000);
+        };
 
         copyBtn.onclick = () => {
             navigator.clipboard.writeText(resultId.textContent);
             copyBtn.innerHTML = '<i class="fas fa-check"></i> COPIÉ !';
             setTimeout(() => {
-                copyBtn.innerHTML = '<i class="fas fa-copy"></i> COPIER L\'ID';
+                copyBtn.innerHTML = '<i class="fas fa-copy"></i> COPIER L\'ID SESSION';
             }, 2000);
-        };
-
-        img.onerror = () => {
-            setTimeout(() => { img.src = '/api/qr?id=' + sessionId + '&t=' + Date.now(); }, 5000);
         };
     </script>
 </body>

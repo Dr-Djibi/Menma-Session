@@ -15,100 +15,135 @@
             <a href="/" style="text-decoration: none;">
                 <h1>MENMA-MD</h1>
             </a>
-            <p>Initialisation du code de parainage</p>
+            <p>Code de couplage WhatsApp</p>
         </header>
 
         <div class="main-content">
-            <div id="pair-input-section">
-                <input type="text" id="phone-number" placeholder="224XXXXXXXXX">
-                <button id="get-code-btn" class="btn btn-primary">
-                    GET CODE
+
+            <!-- Étape 1 : Saisie du numéro -->
+            <div id="input-section">
+                <input type="text" id="phone-number" placeholder="224XXXXXXXXX" style="margin-bottom:12px;">
+                <button id="get-code-btn" class="btn btn-primary" style="width:100%;">
+                    <i class="fas fa-link"></i> OBTENIR LE CODE
                 </button>
             </div>
 
+            <!-- Étape 2 : Affichage du code pairing -->
             <div id="pair-display-section" style="display: none; text-align: center;">
-                <p style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 20px;">Utiliser ce code sur votre
-                    appareil :
+
+                <p id="pair-instruction" style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 20px;">
+                    Entrez ce code sur votre appareil WhatsApp :
                 </p>
+
                 <div id="pair-code" class="code-box">--------</div>
-                <button class="btn btn-primary" id="copy-pair-btn" style="margin-top: 10px; width: 100%; display: none;">
+
+                <button class="btn btn-primary" id="copy-pair-btn"
+                    style="margin-top: 10px; width: 100%; display: none;">
                     <i class="fas fa-copy"></i> COPIER LE CODE
                 </button>
 
-                <div id="status-container" style="display: none; margin-top: 20px;">
+                <!-- Spinner pendant l'attente de connexion -->
+                <div id="loading-spinner" style="margin-top: 30px; color: var(--gold);">
+                    <i class="fas fa-circle-notch fa-spin" style="font-size: 1.5rem;"></i>
+                    <p style="font-size: 0.75rem; margin-top: 8px;">En attente de connexion...</p>
+                </div>
+
+                <!-- Section SESSION ID après succès -->
+                <div id="session-section" style="display: none; margin-top: 20px;">
+                    <p style="color: #2ecc71; font-weight: bold; margin-bottom: 10px;">✅ SESSION CONNECTÉE !</p>
+                    <div id="session-id-box" class="code-box"
+                        style="font-size: 0.9rem; word-break: break-all; padding: 15px; border: 1px solid var(--gold-primary);">
+                    </div>
                     <button class="btn btn-primary" id="copy-session-btn" style="margin-top: 10px; width: 100%;">
                         <i class="fas fa-copy"></i> COPIER L'ID SESSION
                     </button>
                 </div>
 
-                <div id="loading-spinner" style="margin-top: 30px;">
-                    <i class="fas fa-circle-notch fa-spin" style="color: var(--gold);"></i>
+                <!-- Boutons Réessayer / Retour -->
+                <div style="display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; justify-content: center;">
+                    <button id="retry-btn" class="btn" style="display: none;">
+                        <i class="fas fa-redo"></i> RÉESSAYER
+                    </button>
+                    <a href="/" class="btn">
+                        <i class="fas fa-arrow-left"></i> RETOUR
+                    </a>
                 </div>
             </div>
 
-            <a href="/" class="btn" style="margin-top: 30px;">
-                <i class="fas fa-arrow-left"></i> RETOUR
-            </a>
         </div>
     </div>
 
+    <script>
+        const numberInput = document.getElementById('phone-number');
+        const getCodeBtn = document.getElementById('get-code-btn');
+        const inputSection = document.getElementById('input-section');
+        const pairDisplaySection = document.getElementById('pair-display-section');
+        const pairCodeElement = document.getElementById('pair-code');
+        const pairInstruction = document.getElementById('pair-instruction');
         const copyPairBtn = document.getElementById('copy-pair-btn');
-        const copySessionBtn = document.getElementById('copy-session-btn');
-        const statusContainer = document.getElementById('status-container');
         const loadingSpinner = document.getElementById('loading-spinner');
+        const sessionSection = document.getElementById('session-section');
+        const sessionIdBox = document.getElementById('session-id-box');
+        const copySessionBtn = document.getElementById('copy-session-btn');
+        const retryBtn = document.getElementById('retry-btn');
+
+        let pollingId = null;
+        let sessionValue = '';
 
         getCodeBtn.onclick = async () => {
             const num = numberInput.value.trim();
-            if (!num) return;
+            if (!num) return alert("Veuillez entrer un numéro.");
 
-            inputSection.style.display = 'none';
-            loadingSection.style.display = 'block';
-            instruction.textContent = 'Utiliser ce code sur votre appareil :'; // Reset instruction
-            instruction.style.color = 'var(--text-dim)'; // Reset color
-            pairCodeElement.textContent = '--------'; // Reset code display
-            pairCodeElement.style.fontSize = ''; // Reset font size
-            pairCodeElement.style.wordBreak = ''; // Reset word break
-            copyPairBtn.style.display = 'none';
-            statusContainer.style.display = 'none';
-            loadingSpinner.style.display = 'block';
+            getCodeBtn.disabled = true;
+            getCodeBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Connexion...';
 
             try {
-                const response = await fetch('/api/pair?number=' + num);
+                const response = await fetch('/api/pair?number=' + encodeURIComponent(num));
                 const data = await response.json();
 
-                loadingSection.style.display = 'none';
-                pairDisplaySection.style.display = 'block';
-                pairCodeElement.textContent = data.code;
-                copyPairBtn.style.display = 'block';
-                pollingId = data.id;
-
-                checkPairingStatus();
+                if (data.code) {
+                    inputSection.style.display = 'none';
+                    pairDisplaySection.style.display = 'block';
+                    pairCodeElement.textContent = data.code;
+                    pairCodeElement.style.fontSize = '2rem';
+                    pairCodeElement.style.letterSpacing = '4px';
+                    copyPairBtn.style.display = 'block';
+                    pollingId = data.id;
+                    checkPairingStatus();
+                } else {
+                    throw new Error("Code non reçu");
+                }
             } catch (err) {
-                loadingSection.style.display = 'none';
-                inputSection.style.display = 'block';
-                alert("Erreur lors de la demande du code.");
+                getCodeBtn.disabled = false;
+                getCodeBtn.innerHTML = '<i class="fas fa-link"></i> OBTENIR LE CODE';
+                alert("Erreur lors de la demande du code. Réessayez.");
             }
         };
 
         async function checkPairingStatus() {
             if (!pollingId) return;
             try {
-                const response = await fetch('/api/status/' + pollingId);
+                const response = await fetch('/api/pair/status/' + pollingId);
                 const data = await response.json();
 
                 if (data.status === 'success') {
+                    // Cacher le spinner et le code pairing
                     loadingSpinner.style.display = 'none';
                     copyPairBtn.style.display = 'none';
-                    pairCodeElement.textContent = data.session;
-                    pairCodeElement.style.fontSize = '0.9rem';
-                    pairCodeElement.style.wordBreak = 'break-all';
-                    instruction.textContent = 'SESSION CONNECTÉE ! Voici votre ID :';
-                    instruction.style.color = '#2ecc71';
-                    statusContainer.style.display = 'block';
+                    pairInstruction.textContent = 'Connexion réussie ! SESSION ID :';
+                    pairInstruction.style.color = '#2ecc71';
+
+                    // Afficher l'ID de session
+                    sessionValue = data.session;
+                    sessionIdBox.textContent = sessionValue;
+                    sessionSection.style.display = 'block';
+
                 } else if (data.status === 'error') {
                     loadingSpinner.style.display = 'none';
-                    instruction.textContent = 'ERREUR DE SESSION';
-                    instruction.style.color = '#e74c3c';
+                    pairInstruction.textContent = 'ERREUR. Veuillez réessayer.';
+                    pairInstruction.style.color = '#e74c3c';
+                    retryBtn.style.display = 'inline-block';
+
                 } else {
                     setTimeout(checkPairingStatus, 4000);
                 }
@@ -126,11 +161,15 @@
         };
 
         copySessionBtn.onclick = () => {
-            navigator.clipboard.writeText(pairCodeElement.textContent);
+            navigator.clipboard.writeText(sessionValue);
             copySessionBtn.innerHTML = '<i class="fas fa-check"></i> COPIÉ !';
             setTimeout(() => {
                 copySessionBtn.innerHTML = '<i class="fas fa-copy"></i> COPIER L\'ID SESSION';
             }, 2000);
+        };
+
+        retryBtn.onclick = () => {
+            location.href = '/pair';
         };
     </script>
 </body>
