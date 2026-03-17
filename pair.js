@@ -110,7 +110,7 @@ router.get('/', async (req, res) => {
                         const msg = `*🤖 𝗠𝗘𝗡𝗠𝗔-𝗠𝗗 𝗦𝗘𝗦𝗦𝗜𝗢𝗡 𝗖𝗢𝗡𝗡𝗘𝗖𝗧𝗘𝗘 🤖*\n\n` +
                             `> *ID* : \`${b64data}\`\n\n` +
                             `_Voici votre ID de session, gardez-le en sécurité._\n\n` +
-                            `Lien du repo : https://github.com/DrDjibi/Menma-Md \n` +
+                            `Lien du repo : https://github.com/Dr-Djibi/Menma-MD \n` +
                             `Developpeur : Dr Djibi\n\n\n` +
                             `*© _2026 Dr Djibi_*`;
                         const message = { image: { url: rl }, caption: msg };
