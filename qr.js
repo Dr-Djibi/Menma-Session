@@ -47,7 +47,7 @@ router.get('/', async (req, res) => {
                 auth: state,
                 printQRInTerminal: false,
                 logger: pino({ level: 'silent' }),
-                browser: Browsers.macOS("Menma-Md"),
+                browser: Browsers.ubuntu("Chrome"),
                 markOnlineOnConnect: false,
                 syncFullHistory: false,
             });

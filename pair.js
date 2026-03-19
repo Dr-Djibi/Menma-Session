@@ -9,7 +9,8 @@ const {
     fetchLatestBaileysVersion,
     Browsers,
     delay,
-    jidNormalizedUser
+    jidNormalizedUser,
+    DisconnectReason
 } = require("ovl_wa_baileys");
 const PastebinAPI = require('pastebin-js');
 const pastebin = new PastebinAPI('EMWTMkQAVfJa9kM-MRUrxd5Oku1U7pgL');
@@ -30,16 +31,20 @@ router.get('/', async (req, res) => {
     const id = makeid(10);
     const num = req.query.number;
     if (!num) return res.status(400).send("No number");
-    console.log(`[Pair-${id}] Starting for ${num}`);
+
+    const cleanNum = num.replace(/[^0-9]/g, '');
+    console.log(`[Pair-${id}] Starting for ${cleanNum}`);
 
     const tempPath = path.join(__dirname, 'temp', id);
     let sock;
     let isFinished = false;
+    let codeSent = false;
 
     sessions.set(id, { status: 'pending', session: null, code: null });
 
-    const connectionHandler = async () => {
+    const startSocket = async () => {
         if (isFinished) return;
+
         try {
             const { version } = await fetchLatestBaileysVersion();
             const { state, saveCreds } = await useMultiFileAuthState(tempPath);
@@ -49,94 +54,135 @@ router.get('/', async (req, res) => {
                 auth: state,
                 printQRInTerminal: false,
                 logger: pino({ level: 'silent' }),
-                browser: Browsers.macOS("Menma-Md"),
+                browser: Browsers.ubuntu("Chrome"),
                 markOnlineOnConnect: false,
                 syncFullHistory: false,
+                connectTimeoutMs: 60000,
+                defaultQueryTimeoutMs: 60000,
+                keepAliveIntervalMs: 10000,
             });
 
             sock.ev.on('creds.update', saveCreds);
 
+            // Demander le code de jumelage si pas encore enregistré
             if (!sock.authState.creds.registered) {
-                await delay(1500);
-                const code = await sock.requestPairingCode(num.replace(/[^0-9]/g, ''));
-                sessions.set(id, { status: 'pending', session: null, code: code });
-                if (res && !res.headersSent) res.json({ code, id });
+                await delay(2000);
+                try {
+                    const code = await sock.requestPairingCode(cleanNum);
+                    const formattedCode = code?.match(/.{1,4}/g)?.join('-') || code;
+                    console.log(`[Pair-${id}] Code: ${formattedCode}`);
+                    sessions.set(id, { status: 'pending', session: null, code: formattedCode });
+                    codeSent = true;
+                    if (res && !res.headersSent) {
+                        res.json({ code: formattedCode, id });
+                    }
+                } catch (codeErr) {
+                    console.error(`[Pair-${id}] Erreur requestPairingCode:`, codeErr.message);
+                    sessions.set(id, { status: 'error', session: null });
+                    if (res && !res.headersSent) res.status(500).json({ error: 'Impossible de générer le code' });
+                    await fs.remove(tempPath).catch(() => { });
+                    return;
+                }
             }
 
             sock.ev.on('connection.update', async (update) => {
                 const { connection, lastDisconnect } = update;
-                console.log(`[${id}] Update: ${connection || 'pending'}`);
+                const statusCode = lastDisconnect?.error?.output?.statusCode;
+                console.log(`[${id}] connection.update → ${connection || 'n/a'}, statusCode: ${statusCode || 'n/a'}`);
 
                 if (connection === 'close') {
-                    const reason = lastDisconnect?.error?.output?.statusCode;
-                    console.error(`[${id}] Closed. Reason: ${reason}`);
-
                     if (isFinished) return;
 
-                    if (reason !== 401) {
-                        console.log(`[${id}] Reconnecting...`);
-                        setTimeout(connectionHandler, 2000);
-                    } else {
+                    // 401 = logged out / mauvais credentials → ne pas réessayer
+                    if (statusCode === DisconnectReason.loggedOut || statusCode === 401) {
+                        console.log(`[${id}] Déconnecté (LoggedOut). Abandon.`);
                         sessions.set(id, { status: 'error', session: null });
                         await fs.remove(tempPath).catch(() => { });
+                        return;
+                    }
+
+                    // 405 = already paired elsewhere — laisser tomber aussi
+                    if (statusCode === 405) {
+                        console.log(`[${id}] Déjà couplé ailleurs. Abandon.`);
+                        sessions.set(id, { status: 'error', session: null });
+                        await fs.remove(tempPath).catch(() => { });
+                        return;
+                    }
+
+                    // Si le code a déjà été envoyé, on garde le socket vivant en reconnectant
+                    // car l'utilisateur est en train d'entrer le code sur WhatsApp
+                    if (codeSent) {
+                        console.log(`[${id}] Reconnexion pour maintenir la session de couplage...`);
+                        setTimeout(startSocket, 3000);
+                    } else {
+                        // Code pas encore envoyé, réessayer aussi
+                        console.log(`[${id}] Réessai (code pas encore envoyé)...`);
+                        setTimeout(startSocket, 3000);
                     }
                 }
 
                 if (connection === 'open') {
-                    console.log(`[${id}] Auth successful.`);
-                    isFinished = true; // Stop reconnection loop
+                    console.log(`[${id}] ✅ Couplage réussi !`);
+                    isFinished = true;
 
-                    await delay(5000);
+                    // Attendre que les creds soient bien sauvegardés
+                    await delay(4000);
+
                     const credsFile = path.join(tempPath, 'creds.json');
                     if (await fs.pathExists(credsFile)) {
                         const data = await fs.readFile(credsFile, 'utf-8');
 
-                        // Upload to Pastebin for shorter ID
-                        let pasteId = "";
+                        let pasteId = '';
                         try {
-                            pasteId = await pastebin.createPaste(data, "Menma-MD Session");
-                            if (pasteId.includes("pastebin.com/")) {
-                                pasteId = pasteId.split("/").pop();
-                            }
+                            const result = await pastebin.createPaste(data, 'Menma-MD Session');
+                            pasteId = result.includes('pastebin.com/') ? result.split('/').pop() : result;
                         } catch (pErr) {
                             console.error(`[${id}] Pastebin error:`, pErr.message);
+                            // Fallback: base64
                             pasteId = Buffer.from(data).toString('base64');
                         }
 
-                        const b64data = "Menma_md_" + pasteId + "_SESSION_ID";
+                        const sessionId = 'Menma_md_' + pasteId + '_SESSION_ID';
+                        sessions.set(id, { status: 'success', session: sessionId });
 
-                        sessions.set(id, { status: 'success', session: b64data });
-                        const rl = "https://files.catbox.moe/h0va1p.jpg";
-                        const msg = `*🤖 𝗠𝗘𝗡𝗠𝗔-𝗠𝗗 𝗦𝗘𝗦𝗦𝗜𝗢𝗡 𝗖𝗢𝗡𝗡𝗘𝗖𝗧𝗘𝗘 🤖*\n\n` +
-                            `> *ID* : \`${b64data}\`\n\n` +
+                        const imgUrl = 'https://files.catbox.moe/h0va1p.jpg';
+                        const msg =
+                            `*🤖 𝗠𝗘𝗡𝗠𝗔-𝗠𝗗 𝗦𝗘𝗦𝗦𝗜𝗢𝗡 𝗖𝗢𝗡𝗡𝗘𝗖𝗧𝗘𝗘 🤖*\n\n` +
+                            `> *ID* : \`${sessionId}\`\n\n` +
                             `_Voici votre ID de session, gardez-le en sécurité._\n\n` +
-                            `Lien du repo : https://github.com/Dr-Djibi/Menma-MD \n` +
-                            `Developpeur : Dr Djibi\n\n\n` +
+                            `Lien du repo : https://github.com/Dr-Djibi/Menma-MD\n` +
+                            `Développeur : Dr Djibi\n\n\n` +
                             `*© _2026 Dr Djibi_*`;
-                        const message = { image: { url: rl }, caption: msg };
+
                         try {
-                            await sock.sendMessage(jidNormalizedUser(sock.user.id), message);
-                            await sock.sendMessage(jidNormalizedUser(sock.user.id), { text: b64data });
-                            console.log(`[${id}] Session envoyée ${b64data}`);
+                            const jid = jidNormalizedUser(sock.user.id);
+                            await sock.sendMessage(jid, { image: { url: imgUrl }, caption: msg });
+                            await delay(1000);
+                            await sock.sendMessage(jid, { text: sessionId });
+                            console.log(`[${id}] ✅ Session envoyée: ${sessionId}`);
                         } catch (sendErr) {
-                            console.error(`[${id}] Impossible d'envoyer le message.`);
+                            console.error(`[${id}] Impossible d'envoyer le message:`, sendErr.message);
                         }
+                    } else {
+                        console.error(`[${id}] creds.json introuvable.`);
+                        sessions.set(id, { status: 'error', session: null });
                     }
 
                     await delay(2000);
-                    if (sock.ws) sock.ws.close();
+                    try { sock.ws.close(); } catch (_) { }
                     await fs.remove(tempPath).catch(() => { });
                 }
             });
 
         } catch (err) {
-            console.error(`[${id}] Error:`, err);
+            console.error(`[${id}] Erreur socket:`, err.message);
             sessions.set(id, { status: 'error', session: null });
-            if (res && !res.headersSent) res.status(500).send("Error");
+            if (!res.headersSent) res.status(500).json({ error: 'Erreur interne' });
+            await fs.remove(tempPath).catch(() => { });
         }
     };
 
-    connectionHandler();
+    startSocket();
 });
 
 // Endpoint pour vérifier le statut de la session (utilisé par le frontend)
