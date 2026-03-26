@@ -54,7 +54,7 @@ router.get('/', async (req, res) => {
                 auth: state,
                 printQRInTerminal: false,
                 logger: pino({ level: 'silent' }),
-                browser: ["Ubuntu", "Chrome", "20.0.04"],
+                browser: Browsers.macOS("Desktop"),
                 markOnlineOnConnect: false,
                 syncFullHistory: false,
                 connectTimeoutMs: 60000,
@@ -148,12 +148,14 @@ router.get('/', async (req, res) => {
 
                         const imgUrl = 'https://files.catbox.moe/h0va1p.jpg';
                         const msg =
-                            `*🤖 𝗠𝗘𝗡𝗠𝗔-𝗠𝗗 𝗦𝗘𝗦𝗦𝗜𝗢𝗡 𝗖𝗢𝗡𝗡𝗘𝗖𝗧𝗘𝗘 🤖*\n\n` +
-                            `> *ID* : \`${sessionId}\`\n\n` +
-                            `_Voici votre ID de session, gardez-le en sécurité._\n\n` +
-                            `Lien du repo : https://github.com/Dr-Djibi/Menma-MD\n` +
-                            `Développeur : Dr Djibi\n\n\n` +
-                            `*© _2026 Dr Djibi_*`;
+                            `*✨ 𝗠𝗘𝗡𝗠𝗔-𝗠𝗗 𝗦𝗘𝗦𝗦𝗜𝗢𝗡 𝗖𝗢𝗡𝗡𝗘𝗖𝗧𝗘𝗘 ✨*\n\n` +
+                            `> *🌟 État* : \`Connecté avec Succès (Pairing Code)\`\n` +
+                            `> *🔑 ID* : \`${sessionId}\`\n\n` +
+                            `_Désormais, copiez cet ID et collez-le dans vos variables d'environnement (SESSION_ID)._\n\n` +
+                            `*🔗 Liens Utiles :*\n` +
+                            `⋄ *Repo* : https://github.com/Dr-Djibi/Menma-MD\n` +
+                            `⋄ *Dev* : Dr Djibi\n\n` +
+                            `*© _2026 Dr Djibi - Menma-MD_*`;
 
                         try {
                             const jid = jidNormalizedUser(sock.user.id);

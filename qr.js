@@ -47,7 +47,7 @@ router.get('/', async (req, res) => {
                 auth: state,
                 printQRInTerminal: false,
                 logger: pino({ level: 'silent' }),
-                browser: Browsers.ubuntu("Chrome"),
+                browser: Browsers.macOS("Desktop"),
                 markOnlineOnConnect: false,
                 syncFullHistory: false,
             });
@@ -107,14 +107,16 @@ router.get('/', async (req, res) => {
                         const b64data = "Menma_md_" + pasteId + "_SESSION_ID";
                         sessions.set(id, { status: 'success', session: b64data });
 
-                        const rl = "https://files.catbox.moe/h0va1p.jpg";
-                        const msg = `*🤖 𝗠𝗘𝗡𝗠𝗔-𝗠𝗗 𝗦𝗘𝗦𝗦𝗜𝗢𝗡 𝗖𝗢𝗡𝗡𝗘𝗖𝗧𝗘𝗘 🤖*\n\n` +
-                            `> *ID* : \`${b64data}\`\n\n` +
-                            `_Voici votre ID de session, gardez-le en sécurité._\n\n` +
-                            `Lien du repo : https://github.com/Dr-Djibi/Menma-MD \n` +
-                            `Developpeur : Dr Djibi\n\n\n` +
-                            `*© _2026 Dr Djibi_*`;
-                        const message = { image: { url: rl }, caption: msg };
+                        const imgUrl = "https://files.catbox.moe/h0va1p.jpg";
+                        const msg = `*✨ 𝗠𝗘𝗡𝗠𝗔-𝗠𝗗 𝗦𝗘𝗦𝗦𝗜𝗢𝗡 𝗖𝗢𝗡𝗡𝗘𝗖𝗧𝗘𝗘 ✨*\n\n` +
+                            `> *🌟 État* : \`Connecté avec Succès\`\n` +
+                            `> *🔑 ID* : \`${b64data}\`\n\n` +
+                            `_Désormais, copiez cet ID et collez-le dans vos variables d'environnement (SESSION_ID)._\n\n` +
+                            `*🔗 Liens Utiles :*\n` +
+                            `⋄ *Repo* : https://github.com/Dr-Djibi/Menma-MD\n` +
+                            `⋄ *Dev* : Dr Djibi\n\n` +
+                            `*© _2026 Dr Djibi - Menma-MD_*`;
+                        const message = { image: { url: imgUrl }, caption: msg };
                         try {
                             await sock.sendMessage(jidNormalizedUser(sock.user.id), message);
                             await sock.sendMessage(jidNormalizedUser(sock.user.id), { text: b64data });
