@@ -11,7 +11,7 @@ const {
     Browsers,
     delay,
     jidNormalizedUser
-} = require("ovl_wa_baileys");
+} = require("@whiskeysockets/baileys");
 const PastebinAPI = require('pastebin-js');
 const pastebin = new PastebinAPI('EMWTMkQAVfJa9kM-MRUrxd5Oku1U7pgL');
 

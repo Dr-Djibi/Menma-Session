@@ -11,7 +11,7 @@ const {
     delay,
     jidNormalizedUser,
     DisconnectReason
-} = require("ovl_wa_baileys");
+} = require("@whiskeysockets/baileys");
 const PastebinAPI = require('pastebin-js');
 const pastebin = new PastebinAPI('EMWTMkQAVfJa9kM-MRUrxd5Oku1U7pgL');
 
@@ -54,7 +54,7 @@ router.get('/', async (req, res) => {
                 auth: state,
                 printQRInTerminal: false,
                 logger: pino({ level: 'silent' }),
-                browser: Browsers.ubuntu("Chrome"),
+                browser: ["Ubuntu", "Chrome", "20.0.04"],
                 markOnlineOnConnect: false,
                 syncFullHistory: false,
                 connectTimeoutMs: 60000,
@@ -66,20 +66,21 @@ router.get('/', async (req, res) => {
 
             // Demander le code de jumelage si pas encore enregistré
             if (!sock.authState.creds.registered) {
-                await delay(2000);
+                await delay(3000); // Délai accru pour la stabilité initiale
                 try {
+                    console.log(`[Pair-${id}] Requesting code for: ${cleanNum}`);
                     const code = await sock.requestPairingCode(cleanNum);
                     const formattedCode = code?.match(/.{1,4}/g)?.join('-') || code;
-                    console.log(`[Pair-${id}] Code: ${formattedCode}`);
+                    console.log(`[Pair-${id}] Code generated successfully: ${formattedCode}`);
                     sessions.set(id, { status: 'pending', session: null, code: formattedCode });
                     codeSent = true;
                     if (res && !res.headersSent) {
                         res.json({ code: formattedCode, id });
                     }
                 } catch (codeErr) {
-                    console.error(`[Pair-${id}] Erreur requestPairingCode:`, codeErr.message);
+                    console.error(`[Pair-${id}] Critical error in requestPairingCode:`, codeErr);
                     sessions.set(id, { status: 'error', session: null });
-                    if (res && !res.headersSent) res.status(500).json({ error: 'Impossible de générer le code' });
+                    if (res && !res.headersSent) res.status(500).json({ error: 'Impossible de générer le code. Vérifiez le numéro ou réessayez.' });
                     await fs.remove(tempPath).catch(() => { });
                     return;
                 }
