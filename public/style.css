@@ -1,271 +1,275 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@300;400;700&display=swap');
 
 :root {
-    --bg: #0a0a0c;
-    --gold: #d4af37;
-    --gold-light: #f1d592;
-    --gold-dark: #996515;
-    --onyx: #16161a;
-    --glass: rgba(22, 22, 26, 0.9);
-    --border: rgba(212, 175, 55, 0.2);
-    --text: #f4f4f4;
-    --text-dim: #a0a0a0;
-    --shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
-    --gold-primary: #d4af37;
+    --bg-dark: #050508;
+    --accent: #d4af37;
+    --accent-glow: rgba(212, 175, 55, 0.4);
+    --gold-gradient: linear-gradient(135deg, #f1d592 0%, #d4af37 50%, #996515 100%);
+    --surface: rgba(15, 15, 20, 0.7);
+    --surface-light: rgba(255, 255, 255, 0.03);
+    --border: rgba(255, 255, 255, 0.08);
+    --text: #ffffff;
+    --text-dim: rgba(255, 255, 255, 0.6);
+    --transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Montserrat', sans-serif;
-    -webkit-tap-highlight-color: transparent;
-}
-
-html {
-    font-size: 16px;
+    font-family: 'Outfit', sans-serif;
+    outline: none;
 }
 
 body {
-    background: radial-gradient(circle at top right, #1a1a1f, #0a0a0c);
+    background: var(--bg-dark);
     color: var(--text);
     min-height: 100vh;
-    min-height: 100dvh;
-    /* mobile dynamic viewport height */
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 16px;
     overflow-x: hidden;
+    padding: 20px;
 }
 
+/* ─── Animated Background Layer ─── */
+.bg-mesh {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -2;
+    background: 
+        radial-gradient(circle at 10% 20%, rgba(212, 175, 55, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(153, 101, 21, 0.05) 0%, transparent 40%),
+        #050508;
+}
+
+.particles {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    overflow: hidden;
+}
+
+.particle {
+    position: absolute;
+    background: var(--gold-gradient);
+    border-radius: 50%;
+    filter: blur(1px);
+    opacity: 0.3;
+    animation: float 20s infinite linear;
+}
+
+@keyframes float {
+    0% { transform: translateY(0) translateX(0) rotate(0deg); opacity: 0; }
+    10% { opacity: 0.3; }
+    90% { opacity: 0.3; }
+    100% { transform: translateY(-100vh) translateX(100px) rotate(360deg); opacity: 0; }
+}
+
+/* ─── Container ─── */
 .container {
+    background: var(--surface);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border: 1px solid var(--border);
+    border-radius: 32px;
     width: 100%;
     max-width: 440px;
-    background: var(--glass);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid var(--border);
-    border-radius: 28px;
-    padding: 36px 24px 32px;
-    box-shadow: var(--shadow);
-    text-align: center;
+    padding: 48px 32px;
+    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8), 
+                inset 0 0 20px rgba(255, 255, 255, 0.02);
     position: relative;
-    animation: slideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow: hidden;
+    animation: fadeIn 0.8s var(--transition);
 }
 
-@keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(24px);
-    }
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
 
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+.container::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(212, 175, 55, 0.03) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
 }
 
 /* ─── Header ─── */
+header {
+    position: relative;
+    z-index: 1;
+    margin-bottom: 40px;
+    text-align: center;
+}
+
 header h1 {
-    font-size: clamp(1.8rem, 7vw, 2.8rem);
-    font-weight: 800;
-    letter-spacing: 4px;
-    background: linear-gradient(135deg, var(--gold-light), var(--gold-dark));
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 2.8rem;
+    font-weight: 700;
+    letter-spacing: -1px;
+    background: var(--gold-gradient);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
     margin-bottom: 8px;
-    line-height: 1.2;
 }
 
 header p {
-    font-size: clamp(0.6rem, 2.5vw, 0.75rem);
+    font-size: 0.85rem;
+    font-weight: 300;
     color: var(--text-dim);
     text-transform: uppercase;
-    letter-spacing: 3px;
-    margin-bottom: 28px;
+    letter-spacing: 4px;
 }
 
 /* ─── Buttons ─── */
+.main-content {
+    position: relative;
+    z-index: 1;
+}
+
 .btn {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
+    gap: 12px;
     width: 100%;
-    padding: 16px 20px;
-    margin-bottom: 12px;
-    background: linear-gradient(135deg, #1a1a1f, #0a0a0c);
+    padding: 18px 24px;
+    margin-bottom: 16px;
+    background: var(--surface-light);
     border: 1px solid var(--border);
-    border-radius: 16px;
-    color: var(--gold);
+    border-radius: 20px;
+    color: #fff;
     font-weight: 600;
-    font-size: clamp(0.78rem, 3vw, 0.9rem);
+    font-size: 0.95rem;
     text-decoration: none;
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: var(--transition);
     cursor: pointer;
-    touch-action: manipulation;
-    min-height: 52px;
-    /* comfortable tap target */
 }
 
-.btn:active {
-    transform: scale(0.97);
-    opacity: 0.85;
-}
-
-@media (hover: hover) {
-    .btn:hover {
-        border-color: var(--gold);
-        transform: translateY(-3px);
-        box-shadow: 0 8px 20px rgba(212, 175, 55, 0.15);
-    }
+.btn i {
+    font-size: 1.1rem;
+    color: var(--accent);
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+    background: var(--gold-gradient);
     color: #000;
     border: none;
-    font-weight: 700;
+    box-shadow: 0 10px 30px var(--accent-glow);
 }
 
-.btn-primary:active {
-    background: linear-gradient(135deg, var(--gold), var(--gold-light));
-    transform: scale(0.97);
-    opacity: 1;
+.btn-primary i {
+    color: #000;
 }
 
-@media (hover: hover) {
-    .btn-primary:hover {
-        background: linear-gradient(135deg, var(--gold), var(--gold-light));
-        box-shadow: 0 8px 24px rgba(212, 175, 55, 0.3);
-        transform: translateY(-3px);
-    }
+.btn:hover {
+    transform: translateY(-4px);
+    border-color: rgba(212, 175, 55, 0.4);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
 }
 
-/* ─── Input ─── */
-input[type="text"],
-input[type="tel"],
-input[type="number"] {
+.btn-primary:hover {
+    box-shadow: 0 15px 35px var(--accent-glow);
+    filter: brightness(1.1);
+}
+
+.btn:active {
+    transform: scale(0.98);
+}
+
+/* ─── Inputs ─── */
+input {
     width: 100%;
-    background: rgba(0, 0, 0, 0.35);
+    background: rgba(0, 0, 0, 0.4);
     border: 1px solid var(--border);
-    padding: 16px 20px;
-    border-radius: 14px;
+    border-radius: 18px;
+    padding: 18px 24px;
     color: #fff;
-    font-size: clamp(0.9rem, 4vw, 1rem);
-    margin-bottom: 14px;
-    outline: none;
-    transition: border-color 0.3s, background 0.3s;
-    -webkit-appearance: none;
-    appearance: none;
-    min-height: 52px;
+    font-size: 1rem;
+    margin-bottom: 16px;
+    transition: var(--transition);
 }
 
 input:focus {
-    border-color: var(--gold);
-    background: rgba(0, 0, 0, 0.5);
+    border-color: var(--accent);
+    background: rgba(0, 0, 0, 0.6);
+    box-shadow: 0 0 20px var(--accent-glow);
 }
 
-input::placeholder {
-    color: var(--text-dim);
-    opacity: 0.7;
-}
-
-/* ─── Code Box ─── */
+/* ─── Code Display ─── */
 .code-box {
-    font-size: clamp(1.6rem, 9vw, 2.5rem);
-    font-weight: 800;
-    color: var(--gold);
-    letter-spacing: clamp(3px, 2vw, 6px);
-    margin: 16px 0;
-    text-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
-    word-break: break-all;
-    line-height: 1.3;
-    padding: 0 8px;
-}
-
-/* Session ID box — text plus petit car long */
-#session-id-box.code-box {
-    font-size: clamp(0.7rem, 3vw, 0.9rem);
-    letter-spacing: 0.5px;
-    word-break: break-all;
-    padding: 14px;
-    border: 1px solid var(--gold-primary);
-    border-radius: 14px;
     background: rgba(0, 0, 0, 0.3);
-    line-height: 1.5;
+    border: 1px dashed var(--accent);
+    border-radius: 20px;
+    padding: 24px;
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 6px;
+    margin: 24px 0;
+    text-shadow: 0 0 20px var(--accent-glow);
+    text-align: center;
 }
 
-/* ─── QR Display ─── */
+#session-id-box.code-box {
+    font-family: monospace;
+    font-size: 0.85rem;
+    letter-spacing: 0;
+    word-break: break-all;
+    line-height: 1.6;
+    border-style: solid;
+}
+
+/* ─── QR Code ─── */
 .qr-display {
-    padding: 12px;
     background: #fff;
-    border-radius: 18px;
-    box-shadow: 0 0 30px rgba(212, 175, 55, 0.2);
+    padding: 16px;
+    border-radius: 24px;
+    margin: 0 auto 30px;
     display: inline-block;
-    max-width: 100%;
+    box-shadow: 0 20px 50px rgba(212, 175, 55, 0.3);
 }
 
 .qr-display img {
-    max-width: 100%;
-    height: auto;
-    display: block;
+    border-radius: 12px;
 }
 
 /* ─── Footer ─── */
 footer {
-    margin-top: 32px;
-    font-size: clamp(0.62rem, 2.2vw, 0.7rem);
+    margin-top: 40px;
+    text-align: center;
     color: var(--text-dim);
+    font-size: 0.8rem;
+    letter-spacing: 1px;
 }
 
 footer a {
-    color: var(--gold);
+    color: var(--accent);
     text-decoration: none;
-    font-weight: 600;
+    font-weight: 700;
 }
 
-/* ─── Spinner & loading ─── */
-.fa-spin {
-    color: var(--gold);
-}
-
-/* ─── Main content spacing ─── */
-.main-content {
-    width: 100%;
-}
-
-/* ─── Very small screens ─── */
-@media (max-width: 360px) {
+/* ─── Responsive ─── */
+@media (max-width: 480px) {
     .container {
-        padding: 28px 16px 24px;
-        border-radius: 20px;
+        padding: 32px 24px;
+        border-radius: 24px;
     }
-
+    
     header h1 {
-        letter-spacing: 2px;
-    }
-
-    .btn {
-        font-size: 0.75rem;
-        padding: 14px 16px;
-    }
-}
-
-/* ─── Landscape mobile ─── */
-@media (max-height: 600px) and (orientation: landscape) {
-    body {
-        align-items: flex-start;
-        padding: 12px 16px;
-    }
-
-    .container {
-        padding: 20px 24px;
-    }
-
-    header p {
-        margin-bottom: 16px;
+        font-size: 2.2rem;
     }
 }

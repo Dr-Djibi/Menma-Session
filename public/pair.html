@@ -10,6 +10,9 @@
 </head>
 
 <body>
+    <div class="bg-mesh"></div>
+    <div id="particles" class="particles"></div>
+
     <div class="container">
         <header>
             <a href="/" style="text-decoration: none;">
@@ -22,55 +25,58 @@
 
             <!-- Étape 1 : Saisie du numéro -->
             <div id="input-section">
-                <input type="text" id="phone-number" placeholder="224XXXXXXXXX" style="margin-bottom:12px;">
-                <button id="get-code-btn" class="btn btn-primary" style="width:100%;">
+                <input type="tel" id="phone-number" placeholder="Ex: 224625968097" autocomplete="off">
+                <button id="get-code-btn" class="btn btn-primary">
                     <i class="fas fa-link"></i> OBTENIR LE CODE
                 </button>
+                <a href="/" class="btn">
+                    <i class="fas fa-arrow-left"></i> RETOUR
+                </a>
             </div>
 
             <!-- Étape 2 : Affichage du code pairing -->
             <div id="pair-display-section" style="display: none; text-align: center;">
 
-                <p id="pair-instruction" style="font-size: 0.8rem; color: var(--text-dim); margin-bottom: 20px;">
+                <p id="pair-instruction" style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 20px;">
                     Entrez ce code sur votre appareil WhatsApp :
                 </p>
 
                 <div id="pair-code" class="code-box">--------</div>
 
-                <button class="btn btn-primary" id="copy-pair-btn"
-                    style="margin-top: 10px; width: 100%; display: none;">
+                <div id="loading-spinner" style="margin-top: 30px; color: var(--accent);">
+                    <i class="fas fa-circle-notch fa-spin" style="font-size: 1.5rem;"></i>
+                    <p style="font-size: 0.75rem; margin-top: 12px; letter-spacing: 1px; color: var(--text-dim);">EN ATTENTE DE CONNEXION...</p>
+                </div>
+
+                <button class="btn btn-primary" id="copy-pair-btn" style="margin-top: 20px; display: none;">
                     <i class="fas fa-copy"></i> COPIER LE CODE
                 </button>
 
-                <!-- Spinner pendant l'attente de connexion -->
-                <div id="loading-spinner" style="margin-top: 30px; color: var(--gold);">
-                    <i class="fas fa-circle-notch fa-spin" style="font-size: 1.5rem;"></i>
-                    <p style="font-size: 0.75rem; margin-top: 8px;">En attente de connexion...</p>
-                </div>
-
                 <!-- Section SESSION ID après succès -->
                 <div id="session-section" style="display: none; margin-top: 20px;">
-                    <p style="color: #2ecc71; font-weight: bold; margin-bottom: 10px;">✅ SESSION CONNECTÉE !</p>
-                    <div id="session-id-box" class="code-box"
-                        style="font-size: 0.9rem; word-break: break-all; padding: 15px; border: 1px solid var(--gold-primary);">
-                    </div>
-                    <button class="btn btn-primary" id="copy-session-btn" style="margin-top: 10px; width: 100%;">
+                    <p style="color: #2ecc71; font-weight: bold; margin-bottom: 15px; letter-spacing: 1px;">✅ SESSION CONNECTÉE !</p>
+                    <div id="session-id-box" class="code-box"></div>
+                    <button class="btn btn-primary" id="copy-session-btn" style="margin-top: 15px;">
                         <i class="fas fa-copy"></i> COPIER L'ID SESSION
                     </button>
                 </div>
 
                 <!-- Boutons Réessayer / Retour -->
-                <div style="display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; justify-content: center;">
+                <div style="display: flex; gap: 10px; margin-top: 30px; flex-wrap: wrap;">
                     <button id="retry-btn" class="btn" style="display: none;">
                         <i class="fas fa-redo"></i> RÉESSAYER
                     </button>
-                    <a href="/" class="btn">
+                    <a href="/" class="btn" style="width: 100%;">
                         <i class="fas fa-arrow-left"></i> RETOUR
                     </a>
                 </div>
             </div>
 
         </div>
+        
+        <footer>
+            <p>&copy; 2026 // <a href="https://github.com/Dr-Djibi/Menma-MD" target="_blank">DR DJIBI</a></p>
+        </footer>
     </div>
 
     <script>
@@ -91,11 +97,11 @@
         let sessionValue = '';
 
         getCodeBtn.onclick = async () => {
-            const num = numberInput.value.trim();
-            if (!num) return alert("Veuillez entrer un numéro.");
+            const num = numberInput.value.trim().replace(/\D/g, "");
+            if (num.length < 5) return alert("Veuillez entrer un numéro valide.");
 
             getCodeBtn.disabled = true;
-            getCodeBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Connexion...';
+            getCodeBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> CONNEXION...';
 
             try {
                 const response = await fetch('/api/pair?number=' + encodeURIComponent(num));
@@ -105,9 +111,7 @@
                     inputSection.style.display = 'none';
                     pairDisplaySection.style.display = 'block';
                     pairCodeElement.textContent = data.code;
-                    pairCodeElement.style.fontSize = '2rem';
-                    pairCodeElement.style.letterSpacing = '4px';
-                    copyPairBtn.style.display = 'block';
+                    copyPairBtn.style.display = 'flex';
                     pollingId = data.id;
                     checkPairingStatus();
                 } else {
@@ -116,7 +120,7 @@
             } catch (err) {
                 getCodeBtn.disabled = false;
                 getCodeBtn.innerHTML = '<i class="fas fa-link"></i> OBTENIR LE CODE';
-                alert("Erreur lors de la demande du code. Réessayez.");
+                alert("Erreur serveur. Veuillez réessayer.");
             }
         };
 
@@ -127,25 +131,20 @@
                 const data = await response.json();
 
                 if (data.status === 'success') {
-                    // Cacher le spinner et le code pairing
                     loadingSpinner.style.display = 'none';
                     copyPairBtn.style.display = 'none';
-                    pairInstruction.textContent = 'Connexion réussie ! SESSION ID :';
+                    pairInstruction.textContent = 'CONNEXION RÉUSSIE !';
                     pairInstruction.style.color = '#2ecc71';
-
-                    // Afficher l'ID de session
                     sessionValue = data.session;
                     sessionIdBox.textContent = sessionValue;
                     sessionSection.style.display = 'block';
-
                 } else if (data.status === 'error') {
                     loadingSpinner.style.display = 'none';
-                    pairInstruction.textContent = 'ERREUR. Veuillez réessayer.';
+                    pairInstruction.textContent = 'ERREUR DE SESSION.';
                     pairInstruction.style.color = '#e74c3c';
-                    retryBtn.style.display = 'inline-block';
-
+                    retryBtn.style.display = 'flex';
                 } else {
-                    setTimeout(checkPairingStatus, 4000);
+                    setTimeout(checkPairingStatus, 5000);
                 }
             } catch (err) {
                 setTimeout(checkPairingStatus, 5000);
@@ -171,6 +170,18 @@
         retryBtn.onclick = () => {
             location.href = '/pair';
         };
+
+        // Particles
+        const container = document.getElementById('particles');
+        for (let i = 0; i < 15; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.width = particle.style.height = (Math.random() * 4 + 1) + 'px';
+            particle.style.left = Math.random() * 100 + 'vw';
+            particle.style.top = Math.random() * 100 + 'vh';
+            particle.style.animationDelay = Math.random() * 20 + 's';
+            container.appendChild(particle);
+        }
     </script>
 </body>
 

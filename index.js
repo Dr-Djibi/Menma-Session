@@ -25,12 +25,21 @@ const axios = require('axios');
 app.listen(PORT, () => console.log(`Server on ${PORT}`));
 
 // --- Auto Health Ping (évite le sleep sur Render/Koyeb) ---
-const SELF_URL = process.env.RENDER_EXTERNAL_URL || process.env.APP_URL || `http://localhost:${PORT}`;
+const SELF_URL = process.env.RENDER_EXTERNAL_URL || process.env.APP_URL || (process.env.KOYEB_PUBLIC_DOMAIN ? `https://${process.env.KOYEB_PUBLIC_DOMAIN}` : null) || `http://localhost:${PORT}`;
+const BOT_URL = process.env.BOT_URL || null;
+
 setInterval(async () => {
     try {
-        await axios.get(SELF_URL + "/");
-        console.log(`[PING] ✅ Alive at ${new Date().toLocaleTimeString()}`);
+        // Ping de soi-même
+        await axios.get(SELF_URL + "/", { timeout: 10000 });
+        
+        // Ping du bot (si configuré) pour le garder éveillé
+        if (BOT_URL) {
+            await axios.get(BOT_URL + "/", { timeout: 10000 }).catch(() => {});
+        }
+        
+        console.log(`[PING] ✅ Services kept alive at ${new Date().toLocaleTimeString()}`);
     } catch (e) {
-        console.log(`[PING] ⚠️ Failed: ${e.message}`);
+        console.log(`[PING] ⚠️ Health-ping report: ${e.message}`);
     }
-}, 60 * 1000); // toutes les 60 secondes
+}, 4 * 60 * 1000); // Toutes les 4 minutes (optimal pour Koyeb/Render)

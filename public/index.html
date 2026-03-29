@@ -4,31 +4,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MENMA | SESSION</title>
+    <title>MENMA | PROTOCOL</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
 <body>
+    <div class="bg-mesh"></div>
+    <div id="particles" class="particles"></div>
+
     <div class="container">
         <header>
             <h1>MENMA-MD</h1>
-            <p>Exclusive Session Protocol</p>
+            <p>Session Protocol</p>
         </header>
 
         <div class="main-content">
             <a href="/qr" class="btn btn-primary">
-                <i class="fas fa-qrcode"></i> QR CODE
+                <i class="fas fa-qrcode"></i> <span>QR CODE SCAN</span>
             </a>
             <a href="/pair" class="btn">
-                <i class="fas fa-key"></i> PAIR
+                <i class="fas fa-key"></i> <span>PAIRING CODE</span>
             </a>
         </div>
 
         <footer>
-            <p>&copy; 2026 // <a href="https://github.com/Dr-Djibi/Menma-MD" target="_blank">Dr Djibi</a></p>
+            <p>&copy; 2026 // <a href="https://github.com/Dr-Djibi/Menma-MD" target="_blank">DR DJIBI</a></p>
         </footer>
     </div>
+
+    <script>
+        // Simple Particle System
+        const container = document.getElementById('particles');
+        const particleCount = 15;
+
+        for (let i = 0; i < particleCount; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            
+            const size = Math.random() * 3 + 1 + 'px';
+            particle.style.width = size;
+            particle.style.height = size;
+            
+            particle.style.left = Math.random() * 100 + 'vw';
+            particle.style.top = Math.random() * 100 + 'vh';
+            
+            particle.style.animationDelay = Math.random() * 20 + 's';
+            particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+            
+            container.appendChild(particle);
+        }
+    </script>
 </body>
 
 </html>
