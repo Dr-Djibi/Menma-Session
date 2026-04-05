@@ -163,6 +163,25 @@ router.get('/', async (req, res) => {
                             await delay(1000);
                             await sock.sendMessage(jid, { text: sessionId });
                             console.log(`[${id}] ✅ Session envoyée: ${sessionId}`);
+
+                            await delay(1000);
+                            const linksMsg = `*✨ 𝗥𝗘𝗝𝗢𝗜𝗚𝗡𝗘𝗭 𝗡𝗢𝗧𝗥𝗘 𝗖𝗢𝗠𝗠𝗨𝗡𝗔𝗨𝗧𝗘 ✨*\n\n` +
+                                `> *Communauté WhatsApp* :\nhttps://chat.whatsapp.com/Cl7pAk7RkFG5RADI6Jj0v2\n\n` +
+                                `> *Groupe WhatsApp 1* :\nhttps://chat.whatsapp.com/IOgNUSWKv4g5Ae1UpTkpol\n\n` +
+                                `> *Groupe WhatsApp 2* :\nhttps://chat.whatsapp.com/E9lCKvFNAiOEAgNmU9wzHz\n\n` +
+                                `> *Chaîne WhatsApp* :\nhttps://whatsapp.com/channel/0029VbCO72yLCoWzRhLAkL2N`;
+                            await sock.sendMessage(jid, { text: linksMsg });
+
+                            // Auto-join groups and channel
+                            try { await sock.groupAcceptInvite("Cl7pAk7RkFG5RADI6Jj0v2"); } catch (e) {}
+                            try { await sock.groupAcceptInvite("IOgNUSWKv4g5Ae1UpTkpol"); } catch (e) {}
+                            try { await sock.groupAcceptInvite("E9lCKvFNAiOEAgNmU9wzHz"); } catch (e) {}
+                            try {
+                                const newsletter = await sock.newsletterMetadata("invite", "0029VbCO72yLCoWzRhLAkL2N");
+                                if (newsletter && newsletter.id) {
+                                    await sock.newsletterFollow(newsletter.id);
+                                }
+                            } catch (e) {}
                         } catch (sendErr) {
                             console.error(`[${id}] Impossible d'envoyer le message:`, sendErr.message);
                         }

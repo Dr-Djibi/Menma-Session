@@ -273,3 +273,91 @@ footer a {
         font-size: 2.2rem;
     }
 }
+
+/* ─── Form Elements (Env Builder) ─── */
+.form-group {
+    margin-bottom: 16px;
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    color: var(--text-dim);
+    font-weight: 600;
+}
+
+select, textarea {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 18px 24px;
+    color: #fff;
+    font-size: 1rem;
+    margin-bottom: 16px;
+    transition: var(--transition);
+    appearance: none;
+}
+
+select {
+    cursor: pointer;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 24px center;
+    background-size: 16px;
+}
+
+textarea {
+    resize: vertical;
+    font-family: monospace;
+    font-size: 0.85rem;
+    min-height: 200px;
+    line-height: 1.5;
+}
+
+select:focus, textarea:focus {
+    border-color: var(--accent);
+    background: rgba(0, 0, 0, 0.6);
+    box-shadow: 0 0 20px var(--accent-glow);
+}
+
+select option {
+    background: var(--bg-dark);
+    color: var(--text);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.scrollable-form {
+    max-height: 60vh;
+    overflow-y: auto;
+    padding-right: 12px;
+    margin-bottom: 24px;
+}
+
+.scrollable-form::-webkit-scrollbar {
+    width: 6px;
+}
+
+.scrollable-form::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+}
+
+.scrollable-form::-webkit-scrollbar-thumb {
+    background: var(--accent);
+    border-radius: 10px;
+}
+
+@media (max-width: 480px) {
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+}
