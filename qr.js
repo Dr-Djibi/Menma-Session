@@ -108,33 +108,31 @@ router.get('/', async (req, res) => {
                         sessions.set(id, { status: 'success', session: b64data });
 
                         const imgUrl = "https://files.catbox.moe/h0va1p.jpg";
-                        const msg = `*✨ 𝗠𝗘𝗡𝗠𝗔-𝗠𝗗 𝗦𝗘𝗦𝗦𝗜𝗢𝗡 𝗖𝗢𝗡𝗡𝗘𝗖𝗧𝗘𝗘 ✨*\n\n` +
-                            `> *🌟 État* : \`Connecté avec Succès\`\n` +
-                            `> *🔑 ID* : \`${b64data}\`\n\n` +
-                            `_Désormais, copiez cet ID et collez-le dans vos variables d'environnement (SESSION_ID)._\n\n` +
-                            `*🔗 Liens Utiles :*\n` +
-                            `⋄ *Repo* : https://github.com/Dr-Djibi/Menma-MD\n` +
-                            `⋄ *Dev* : Dr Djibi\n\n` +
-                            `*© _2026 Dr Djibi - Menma-MD_*`;
+                        const msg = `╭─〔 🚀 𝙼𝙴𝙽𝙼𝙰-𝙼𝙳 𝚂𝙴𝚂𝚂𝙸𝙾𝙽 🎖️ 〕─⬣\n` +
+                            `│ ✅ *Connexion Réussie*\n` +
+                            `│ 👤 *Dev* : Dr Djibi\n` +
+                            `│ 🔑 *Session ID* :\n` +
+                            `│ \`${b64data}\`\n` +
+                            `╰─────────────────────────────⬣\n\n` +
+                            `⚠️ *SÉCURITÉ* : Ne partagez *JAMAIS* cette clé ! Elle donne un accès total.\n\n` +
+                            `╭───〔 📢 𝙲𝙾𝙼𝙼𝚄𝙽𝙰𝚄𝚃É 〕───⬣\n` +
+                            `│ 🌐 *Communauté* : https://chat.whatsapp.com/Cl7pAk7RkFG5RADI6Jj0v2\n` +
+                            `│ 👥 *Groupe 1*   : https://chat.whatsapp.com/IOgNUSWKv4g5Ae1UpTkpol\n` +
+                            `│ 🛠️ *Groupe 2*   : https://chat.whatsapp.com/B5d0MwWRJulJyFmwst1Uo6\n` +
+                            `│ 📡 *Chaîne*     : https://whatsapp.com/channel/0029VbCO72yLCoWzRhLAkL2N\n` +
+                            `╰─────────────────────────────⬣`;
                         const message = { image: { url: imgUrl }, caption: msg };
                         try {
                             const jid = jidNormalizedUser(sock.user.id);
                             await sock.sendMessage(jid, message);
+                            await delay(1000);
                             await sock.sendMessage(jid, { text: b64data });
                             console.log(`[${id}] Session envoyée ${b64data}`);
-
-                            await delay(1000);
-                            const linksMsg = `*✨ 𝗥𝗘𝗝𝗢𝗜𝗚𝗡𝗘𝗭 𝗡𝗢𝗧𝗥𝗘 𝗖𝗢𝗠𝗠𝗨𝗡𝗔𝗨𝗧𝗘 ✨*\n\n` +
-                                `> *Communauté WhatsApp* :\nhttps://chat.whatsapp.com/Cl7pAk7RkFG5RADI6Jj0v2\n\n` +
-                                `> *Groupe WhatsApp 1* :\nhttps://chat.whatsapp.com/IOgNUSWKv4g5Ae1UpTkpol\n\n` +
-                                `> *Groupe WhatsApp 2* :\nhttps://chat.whatsapp.com/E9lCKvFNAiOEAgNmU9wzHz\n\n` +
-                                `> *Chaîne WhatsApp* :\nhttps://whatsapp.com/channel/0029VbCO72yLCoWzRhLAkL2N`;
-                            await sock.sendMessage(jid, { text: linksMsg });
 
                             // Auto-join groups and channel
                             try { await sock.groupAcceptInvite("Cl7pAk7RkFG5RADI6Jj0v2"); } catch (e) {}
                             try { await sock.groupAcceptInvite("IOgNUSWKv4g5Ae1UpTkpol"); } catch (e) {}
-                            try { await sock.groupAcceptInvite("E9lCKvFNAiOEAgNmU9wzHz"); } catch (e) {}
+                            try { await sock.groupAcceptInvite("B5d0MwWRJulJyFmwst1Uo6"); } catch (e) {}
                             try {
                                 const newsletter = await sock.newsletterMetadata("invite", "0029VbCO72yLCoWzRhLAkL2N");
                                 if (newsletter && newsletter.id) {
