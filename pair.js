@@ -3,15 +3,16 @@ const router = express.Router();
 const pino = require('pino');
 const path = require('path');
 const fs = require('fs-extra');
+const Baileys = require("@whiskeysockets/baileys");
 const {
-    default: makeWASocket,
     useMultiFileAuthState,
     fetchLatestBaileysVersion,
     Browsers,
     delay,
     jidNormalizedUser,
     DisconnectReason
-} = require("@whiskeysockets/baileys");
+} = Baileys;
+const makeWASocket = Baileys.default || Baileys.makeWASocket || Baileys;
 const PastebinAPI = require('pastebin-js');
 const pastebin = new PastebinAPI('EMWTMkQAVfJa9kM-MRUrxd5Oku1U7pgL');
 
