@@ -48,7 +48,7 @@ router.get('/', async (req, res) => {
                 auth: state,
                 printQRInTerminal: false,
                 logger: pino({ level: 'silent' }),
-                browser: ["Ubuntu", "Chrome", "20.0.04"],
+                browser: Baileys.Browsers.ubuntu("Chrome"),
                 markOnlineOnConnect: false,
                 syncFullHistory: false,
             });
