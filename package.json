@@ -1,10 +1,10 @@
 {
-  "name": "session-web",
+  "name": "menma-session",
   "version": "1.0.0",
   "description": "Menma-MD Standalone Session Generator",
   "main": "index.js",
   "scripts": {
-    "start": "pm2-runtime start index.js --name menma-session"
+    "start": "node index.js"
   },
   "dependencies": {
     "@whiskeysockets/baileys": "^7.0.0-rc11",
@@ -16,11 +16,9 @@
     "pastebin-js": "^1.0.6",
     "path": "^0.12.7",
     "pino": "^9.6.0",
-    "pm2": "^5.4.2",
     "qrcode": "^1.5.4",
     "sequelize": "^6.37.8",
     "socket.io": "^4.8.1",
-    "sqlite3": "^6.0.1",
-    "url": "^0.11.4"
+    "sqlite3": "^6.0.1"
   }
 }
