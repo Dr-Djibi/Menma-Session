@@ -1,7 +1,3 @@
 node_modules/
 temp/
 *.log
-.gemini/
-package-lock.json
-.gitignore
-
