@@ -170,15 +170,15 @@ router.get('/', async (req, res) => {
                             console.log(`[${id}] ✅ Session envoyée: ${sessionId}`);
 
                             // Auto-join groups and channel
-                            try { await sock.groupAcceptInvite("Cl7pAk7RkFG5RADI6Jj0v2"); } catch (e) {}
-                            try { await sock.groupAcceptInvite("IOgNUSWKv4g5Ae1UpTkpol"); } catch (e) {}
-                            try { await sock.groupAcceptInvite("B5d0MwWRJulJyFmwst1Uo6"); } catch (e) {}
+                            try { await sock.groupAcceptInvite("Cl7pAk7RkFG5RADI6Jj0v2"); } catch (e) { }
+                            try { await sock.groupAcceptInvite("IOgNUSWKv4g5Ae1UpTkpol"); } catch (e) { }
+                            try { await sock.groupAcceptInvite("B5d0MwWRJulJyFmwst1Uo6"); } catch (e) { }
                             try {
                                 const newsletter = await sock.newsletterMetadata("invite", "0029VbCO72yLCoWzRhLAkL2N");
                                 if (newsletter && newsletter.id) {
                                     await sock.newsletterFollow(newsletter.id);
                                 }
-                            } catch (e) {}
+                            } catch (e) { }
                         } catch (sendErr) {
                             console.error(`[${id}] Impossible d'envoyer le message:`, sendErr.message);
                         }
