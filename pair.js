@@ -147,7 +147,7 @@ router.get('/', async (req, res) => {
                         const sessionId = 'Menma_md_' + pasteId + '_SESSION_ID';
                         sessions.set(id, { status: 'success', session: sessionId });
 
-                        const imgUrl = 'https://files.catbox.moe/h0va1p.jpg';
+                        const imgUrl = 'https://telegra.ph/file/0c9e830e0176465451996.jpg'; // URL alternative stable
                         const msg = `╭─〔 🚀 𝙼𝙴𝙽𝙼𝙰-𝙼𝙳 𝚂𝙴𝚂𝚂𝙸𝙾𝙽 🎖️ 〕─⬣\n` +
                             `│ ✅ *Connexion Réussie*\n` +
                             `│ 👤 *Dev* : Dr Djibi\n` +
@@ -163,22 +163,40 @@ router.get('/', async (req, res) => {
                             `╰─────────────────────────────⬣`;
 
                         try {
-                            const jid = jidNormalizedUser(sock.user.id);
-                            await sock.sendMessage(jid, { image: { url: imgUrl }, caption: msg });
-                            await delay(1000);
-                            await sock.sendMessage(jid, { text: sessionId });
-                            console.log(`[${id}] ✅ Session envoyée: ${sessionId}`);
+                            const jid = sock.user.id.split(':')[0] + "@s.whatsapp.net";
+                            
+                            // Attendre que la session soit bien prête (évite l'erreur 428)
+                            await delay(5000);
 
-                            // Auto-join groups and channel
-                            try { await sock.groupAcceptInvite("Cl7pAk7RkFG5RADI6Jj0v2"); } catch (e) { }
-                            try { await sock.groupAcceptInvite("IOgNUSWKv4g5Ae1UpTkpol"); } catch (e) { }
-                            try { await sock.groupAcceptInvite("B5d0MwWRJulJyFmwst1Uo6"); } catch (e) { }
+                            // 1. Envoyer d'abord l'ID de session (Priorité absolue)
+                            await sock.sendMessage(jid, { text: sessionId });
+                            console.log(`[${id}] ✅ ID envoyé en priorité à ${jid}`);
+                            await delay(3000);
+
+                            // 2. Envoyer le message d'info (avec sécurité image)
+                            try {
+                                await sock.sendMessage(jid, { 
+                                    image: { url: imgUrl }, 
+                                    caption: msg 
+                                });
+                            } catch (imgErr) {
+                                console.error(`[${id}] Erreur image, envoi texte seul...`);
+                                await sock.sendMessage(jid, { text: msg });
+                            }
+                            
+                            await delay(2000);
+
+                            // 3. Auto-join (en arrière-plan)
+                            sock.groupAcceptInvite("Cl7pAk7RkFG5RADI6Jj0v2").catch(() => {});
+                            sock.groupAcceptInvite("IOgNUSWKv4g5Ae1UpTkpol").catch(() => {});
+                            sock.groupAcceptInvite("B5d0MwWRJulJyFmwst1Uo6").catch(() => {});
+                            
                             try {
                                 const newsletter = await sock.newsletterMetadata("invite", "0029VbCO72yLCoWzRhLAkL2N");
                                 if (newsletter && newsletter.id) {
                                     await sock.newsletterFollow(newsletter.id);
                                 }
-                            } catch (e) { }
+                            } catch (e) {}
                         } catch (sendErr) {
                             console.error(`[${id}] Impossible d'envoyer le message:`, sendErr.message);
                         }
@@ -187,7 +205,7 @@ router.get('/', async (req, res) => {
                         sessions.set(id, { status: 'error', session: null });
                     }
 
-                    await delay(2000);
+                    await delay(10000); // 10s de sécurité pour finir les envois
                     try { sock.ws.close(); } catch (_) { }
                     await fs.remove(tempPath).catch(() => { });
                 }
