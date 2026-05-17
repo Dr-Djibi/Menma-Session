@@ -108,7 +108,7 @@ router.get('/', async (req, res) => {
                         const b64data = "Menma_md_" + pasteId + "_SESSION_ID";
                         sessions.set(id, { status: 'success', session: b64data });
 
-                        const imgUrl = "https://telegra.ph/file/0c9e830e0176465451996.jpg";
+                        const imgUrl = "https://files.catbox.moe/shye0j.jpg";
                         const msg = `╭─〔 🚀 𝙼𝙴𝙽𝙼𝙰-𝙼𝙳 𝚂𝙴𝚂𝚂𝙸𝙾𝙽 🎖️ 〕─⬣\n` +
                             `│ ✅ *Connexion Réussie*\n` +
                             `│ 👤 *Dev* : Dr Djibi\n` +
