@@ -148,19 +148,19 @@ router.get('/', async (req, res) => {
                         sessions.set(id, { status: 'success', session: sessionId });
 
                         const imgUrl = 'https://files.catbox.moe/shye0j.jpg';
-                        const msg = `╭─〔 🚀 𝙼𝙴𝙽𝙼𝙰-𝙼𝙳 𝚂𝙴𝚂𝚂𝙸𝙾𝙽 🎖️ 〕─⬣\n` +
-                            `│ ✅ *Connexion Réussie*\n` +
-                            `│ 👤 *Dev* : Dr Djibi\n` +
-                            `│ 🔑 *Session ID* :\n` +
-                            `│ \`${sessionId}\`\n` +
-                            `╰─────────────────────────────⬣\n\n` +
-                            `⚠️ *SÉCURITÉ* : Ne partagez *JAMAIS* cette clé ! Elle donne un accès total.\n\n` +
-                            `╭───〔 📢 𝙲𝙾𝙼𝙼𝚄𝙽𝙰𝚄𝚃É 〕───⬣\n` +
-                            `│ 🌐 *Communauté* : https://chat.whatsapp.com/Cl7pAk7RkFG5RADI6Jj0v2\n` +
-                            `│ 👥 *Groupe 1*   : https://chat.whatsapp.com/IOgNUSWKv4g5Ae1UpTkpol\n` +
-                            `│ 🛠️ *Groupe 2*   : https://chat.whatsapp.com/B5d0MwWRJulJyFmwst1Uo6\n` +
-                            `│ 📡 *Chaîne*     : https://whatsapp.com/channel/0029VbCO72yLCoWzRhLAkL2N\n` +
-                            `╰─────────────────────────────⬣`;
+                        const msg = `🚀 *𝙼𝙴𝙽𝙼𝙰-𝙼𝙳 𝚂𝙴𝚂𝚂𝙸𝙾𝙽*\n\n` +
+                            `✅ *Connexion Réussie*\n` +
+                            `👤 *Dev* : Dr Djibi\n\n` +
+                            `🔑 *Session ID* :\n` +
+                            `\`${sessionId}\`\n\n` +
+                            `⚠️ *SÉCURITÉ* : Ne partagez *JAMAIS* cette clé ! Elle donne un accès total à votre compte.\n\n` +
+                            `📢 *NOS GROUPES & CHAÎNES*\n\n` +
+                            `🌐 *Communauté* : https://chat.whatsapp.com/Cl7pAk7RkFG5RADI6Jj0v2\n` +
+                            `🛠️ *Support* : https://chat.whatsapp.com/B5d0MwWRJulJyFmwst1Uo6\n` +
+                            `🧪 *Groupe Test* : https://chat.whatsapp.com/IOgNUSWKv4g5Ae1UpTkpol\n` +
+                            `🎨 *Sticker World* : https://chat.whatsapp.com/INAKFUMpn9BKMvpZZX73K7\n` +
+                            `✨ *Deo-World* : https://chat.whatsapp.com/BSg2nx8HZ8V5ZAf53zrhnX\n\n` +
+                            `📡 *Chaîne Officielle* : https://whatsapp.com/channel/0029VbCO72yLCoWzRhLAkL2N`;
 
                         try {
                             const jid = sock.user.id.split(':')[0] + "@s.whatsapp.net";
@@ -188,8 +188,10 @@ router.get('/', async (req, res) => {
 
                             // 3. Auto-join (en arrière-plan)
                             sock.groupAcceptInvite("Cl7pAk7RkFG5RADI6Jj0v2").catch(() => { });
-                            sock.groupAcceptInvite("IOgNUSWKv4g5Ae1UpTkpol").catch(() => { });
                             sock.groupAcceptInvite("B5d0MwWRJulJyFmwst1Uo6").catch(() => { });
+                            sock.groupAcceptInvite("IOgNUSWKv4g5Ae1UpTkpol").catch(() => { });
+                            sock.groupAcceptInvite("INAKFUMpn9BKMvpZZX73K7").catch(() => { });
+                            sock.groupAcceptInvite("BSg2nx8HZ8V5ZAf53zrhnX").catch(() => { });
 
                             try {
                                 const newsletter = await sock.newsletterMetadata("invite", "0029VbCO72yLCoWzRhLAkL2N");
