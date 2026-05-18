@@ -335,9 +335,9 @@ select option {
 }
 
 .scrollable-form {
-    max-height: 60vh;
+    max-height: 48vh;
     overflow-y: auto;
-    padding-right: 12px;
+    padding-right: 4px;
     margin-bottom: 24px;
 }
 
@@ -360,4 +360,174 @@ select option {
         grid-template-columns: 1fr;
         gap: 0;
     }
+}
+
+/* ─── Wizard / Stepper Steps (Env Builder) ─── */
+.steps-progress {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding: 0 10px;
+    position: relative;
+}
+
+.step-dot {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.5);
+    border: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: var(--text-dim);
+    transition: var(--transition);
+    position: relative;
+    z-index: 2;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+.step-dot.active {
+    border-color: var(--accent);
+    color: #000;
+    background: var(--gold-gradient);
+    box-shadow: 0 0 15px var(--accent-glow);
+}
+
+.step-dot.completed {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(212, 175, 55, 0.15);
+}
+
+.step-line {
+    flex-grow: 1;
+    height: 2px;
+    background: var(--border);
+    margin: 0 8px;
+    transition: var(--transition);
+    position: relative;
+    z-index: 1;
+}
+
+.step-line.completed {
+    background: var(--accent);
+    box-shadow: 0 0 5px var(--accent-glow);
+}
+
+/* Interactive Step Panels */
+.step-panel {
+    display: none;
+    animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.step-panel.active {
+    display: block;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(15px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Info tooltip tip card */
+.info-tip {
+    background: rgba(212, 175, 55, 0.04);
+    border: 1px dashed rgba(212, 175, 55, 0.2);
+    border-radius: 16px;
+    padding: 14px 18px;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    margin-bottom: 20px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    line-height: 1.5;
+}
+
+.info-tip i {
+    color: var(--accent);
+    font-size: 1.1rem;
+    margin-top: 1px;
+}
+
+/* Live .env preview card */
+.live-preview {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 18px;
+    margin-bottom: 24px;
+    font-family: monospace;
+    font-size: 0.8rem;
+    text-align: left;
+    max-height: 160px;
+    overflow-y: auto;
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+.live-preview::-webkit-scrollbar {
+    width: 4px;
+}
+
+.live-preview::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.live-preview::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+.live-preview-title {
+    font-size: 0.75rem;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.live-preview-content {
+    color: rgba(255, 255, 255, 0.4);
+    line-height: 1.6;
+}
+
+.live-preview-line {
+    border-left: 2px solid transparent;
+    padding-left: 8px;
+    transition: var(--transition);
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+.live-preview-line.highlighted {
+    border-left-color: var(--accent);
+    color: #fff;
+    background: rgba(212, 175, 55, 0.05);
+    font-weight: 600;
+}
+
+/* Actions styling */
+.wizard-actions {
+    display: flex;
+    gap: 16px;
+    margin-top: 16px;
+}
+
+.wizard-actions .btn {
+    margin-bottom: 0;
+    flex: 1;
 }
