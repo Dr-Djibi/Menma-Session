@@ -67,7 +67,7 @@ router.get('/', async (req, res) => {
 
             // Demander le code de jumelage si pas encore enregistré
             if (!sock.authState.creds.registered) {
-                await delay(3000); // Délai accru pour la stabilité initiale
+                await delay(3000);
                 try {
                     console.log(`[Pair-${id}] Requesting code for: ${cleanNum}`);
                     const code = await sock.requestPairingCode(cleanNum);
@@ -95,7 +95,6 @@ router.get('/', async (req, res) => {
                 if (connection === 'close') {
                     if (isFinished) return;
 
-                    // 401 = logged out / mauvais credentials → ne pas réessayer
                     if (statusCode === DisconnectReason.loggedOut || statusCode === 401) {
                         console.log(`[${id}] Déconnecté (LoggedOut). Abandon.`);
                         sessions.set(id, { status: 'error', session: null });
@@ -103,7 +102,6 @@ router.get('/', async (req, res) => {
                         return;
                     }
 
-                    // 405 = already paired elsewhere — laisser tomber aussi
                     if (statusCode === 405) {
                         console.log(`[${id}] Déjà couplé ailleurs. Abandon.`);
                         sessions.set(id, { status: 'error', session: null });
@@ -111,103 +109,67 @@ router.get('/', async (req, res) => {
                         return;
                     }
 
-                    // Si le code a déjà été envoyé, on garde le socket vivant en reconnectant
-                    // car l'utilisateur est en train d'entrer le code sur WhatsApp
                     if (codeSent) {
                         console.log(`[${id}] Reconnexion pour maintenir la session de couplage...`);
                         setTimeout(startSocket, 3000);
                     } else {
-                        // Code pas encore envoyé, réessayer aussi
                         console.log(`[${id}] Réessai (code pas encore envoyé)...`);
                         setTimeout(startSocket, 3000);
                     }
                 }
 
                 if (connection === 'open') {
-                    console.log(`[${id}] ✅ Couplage réussi !`);
-                    isFinished = true;
-
-                    // Attendre que les creds soient bien sauvegardés
-                    await delay(4000);
-
-                    const credsFile = path.join(tempPath, 'creds.json');
-                    if (await fs.pathExists(credsFile)) {
-                        const data = await fs.readFile(credsFile, 'utf-8');
-
-                        let pasteId = '';
-                        try {
-                            const result = await pastebin.createPaste(data, 'Menma-MD Session');
-                            pasteId = result.includes('pastebin.com/') ? result.split('/').pop() : result;
-                        } catch (pErr) {
-                            console.error(`[${id}] Pastebin error:`, pErr.message);
-                            // Fallback: base64
-                            pasteId = Buffer.from(data).toString('base64');
-                        }
-
-                        const sessionId = 'Menma_md_' + pasteId + '_SESSION_ID';
-                        sessions.set(id, { status: 'success', session: sessionId });
-
-                        const imgUrl = 'https://files.catbox.moe/shye0j.jpg';
-                        const msg = `🚀 *𝙼𝙴𝙽𝙼𝙰-𝙼𝙳 𝚂𝙴𝚂𝚂𝙸𝙾𝙽*\n\n` +
-                            `✅ *Connexion Réussie*\n` +
-                            `👤 *Dev* : Dr Djibi\n\n` +
-                            `🔑 *Session ID* :\n` +
-                            `\`${sessionId}\`\n\n` +
-                            `⚠️ *SÉCURITÉ* : Ne partagez *JAMAIS* cette clé ! Elle donne un accès total à votre compte.\n\n` +
-                            `📢 *NOS GROUPES & CHAÎNES*\n\n` +
-                            `🌐 *Communauté* : https://chat.whatsapp.com/Cl7pAk7RkFG5RADI6Jj0v2\n` +
-                            `🛠️ *Support* : https://chat.whatsapp.com/B5d0MwWRJulJyFmwst1Uo6\n` +
-                            `🧪 *Groupe Test* : https://chat.whatsapp.com/IOgNUSWKv4g5Ae1UpTkpol\n` +
-                            `🎨 *Sticker World* : https://chat.whatsapp.com/INAKFUMpn9BKMvpZZX73K7\n` +
-                            `✨ *Deo-World* : https://chat.whatsapp.com/BSg2nx8HZ8V5ZAf53zrhnX\n\n` +
-                            `📡 *Chaîne Officielle* : https://whatsapp.com/channel/0029VbCO72yLCoWzRhLAkL2N`;
-
-                        try {
-                            const jid = sock.user.id.split(':')[0] + "@s.whatsapp.net";
-
-                            // Attendre que la session soit bien prête (évite l'erreur 428)
-                            await delay(5000);
-
-                            // 1. Envoyer d'abord l'ID de session (Priorité absolue)
-                            await sock.sendMessage(jid, { text: sessionId });
-                            console.log(`[${id}] ✅ ID envoyé en priorité à ${jid}`);
-                            await delay(3000);
-
-                            // 2. Envoyer le message d'info (avec sécurité image)
-                            try {
-                                await sock.sendMessage(jid, {
-                                    image: { url: imgUrl },
-                                    caption: msg
-                                });
-                            } catch (imgErr) {
-                                console.error(`[${id}] Erreur image, envoi texte seul...`);
-                                await sock.sendMessage(jid, { text: msg });
-                            }
-
-                            await delay(2000);
-
-                            // 3. Auto-join (en arrière-plan)
-                            sock.groupAcceptInvite("Cl7pAk7RkFG5RADI6Jj0v2").catch(() => { });
-                            sock.groupAcceptInvite("B5d0MwWRJulJyFmwst1Uo6").catch(() => { });
-                            sock.groupAcceptInvite("IOgNUSWKv4g5Ae1UpTkpol").catch(() => { });
-                            sock.groupAcceptInvite("INAKFUMpn9BKMvpZZX73K7").catch(() => { });
-                            sock.groupAcceptInvite("BSg2nx8HZ8V5ZAf53zrhnX").catch(() => { });
-
-                            try {
-                                const newsletter = await sock.newsletterMetadata("invite", "0029VbCO72yLCoWzRhLAkL2N");
-                                if (newsletter && newsletter.id) {
-                                    await sock.newsletterFollow(newsletter.id);
-                                }
-                            } catch (e) { }
-                        } catch (sendErr) {
-                            console.error(`[${id}] Impossible d'envoyer le message:`, sendErr.message);
-                        }
-                    } else {
-                        console.error(`[${id}] creds.json introuvable.`);
-                        sessions.set(id, { status: 'error', session: null });
+                    console.log(`[${id}] ✅ Couplage réussi ! Vérification des crédentials...`);
+                    
+                    let retries = 0;
+                    while (retries < 10 && (!sock.authState.creds.me || !sock.authState.creds.registered)) {
+                        await delay(1000);
+                        retries++;
                     }
 
-                    await delay(10000); // 10s de sécurité pour finir les envois
+                    if (!sock.authState.creds.me || !sock.authState.creds.registered) {
+                        console.error(`[${id}] ❌ Échec : Creds incomplets.`);
+                        sessions.set(id, { status: 'error', session: null });
+                        return;
+                    }
+
+                    isFinished = true;
+                    const credsFile = path.join(tempPath, 'creds.json');
+                    const data = await fs.readFile(credsFile, 'utf-8');
+
+                    let pasteId = '';
+                    try {
+                        const result = await pastebin.createPaste(data, 'Menma-MD Session');
+                        pasteId = result.includes('pastebin.com/') ? result.split('/').pop() : result;
+                    } catch (pErr) {
+                        console.error(`[${id}] Pastebin error:`, pErr.message);
+                        pasteId = Buffer.from(data).toString('base64');
+                    }
+
+                    const sessionId = 'Menma_md_' + pasteId + '_SESSION_ID';
+                    sessions.set(id, { status: 'success', session: sessionId });
+
+                    const imgUrl = 'https://files.catbox.moe/shye0j.jpg';
+                    const msg = `🚀 *𝙼𝙴𝙽𝙼𝙰-𝙼𝙳 𝚂𝙴𝚂𝚂𝙸𝙾𝙽*\n\n✅ *Connexion Réussie*\n\n🔑 *Session ID* :\n\`${sessionId}\`\n\n⚠️ *SÉCURITÉ* : Ne partagez *JAMAIS* cette clé !`;
+
+                    try {
+                        const jid = sock.user.id.split(':')[0] + "@s.whatsapp.net";
+                        await delay(5000);
+                        await sock.sendMessage(jid, { text: sessionId });
+                        await delay(3000);
+                        await sock.sendMessage(jid, { image: { url: imgUrl }, caption: msg });
+                        
+                        // Auto-join
+                        sock.groupAcceptInvite("Cl7pAk7RkFG5RADI6Jj0v2").catch(() => { });
+                        sock.groupAcceptInvite("B5d0MwWRJulJyFmwst1Uo6").catch(() => { });
+                        sock.groupAcceptInvite("IOgNUSWKv4g5Ae1UpTkpol").catch(() => { });
+                        sock.groupAcceptInvite("INAKFUMpn9BKMvpZZX73K7").catch(() => { });
+                        sock.groupAcceptInvite("BSg2nx8HZ8V5ZAf53zrhnX").catch(() => { });
+                    } catch (sendErr) {
+                        console.error(`[${id}] Impossible d'envoyer le message:`, sendErr.message);
+                    }
+
+                    await delay(10000);
                     try { sock.ws.close(); } catch (_) { }
                     await fs.remove(tempPath).catch(() => { });
                 }
@@ -224,7 +186,6 @@ router.get('/', async (req, res) => {
     startSocket();
 });
 
-// Endpoint pour vérifier le statut de la session (utilisé par le frontend)
 router.get('/status/:id', (req, res) => {
     const state = sessions.get(req.params.id);
     if (!state) return res.status(404).json({ status: 'not_found' });
