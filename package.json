@@ -1,13 +1,13 @@
 {
   "name": "menma-session",
   "version": "1.0.0",
-  "description": "Menma-MD Standalone Session Generator",
+  "description": "Menma-MD Session Generator",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
   },
   "dependencies": {
-    "@whiskeysockets/baileys": "^7.0.0-rc11",
+    "@whiskeysockets/baileys": "latest",
     "axios": "^1.7.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
