@@ -25,8 +25,12 @@ app.get('/dashboard', (req, res) => res.sendFile(path.join(__dirname, 'public', 
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
 const axios = require('axios');
+const { startPinger } = require('./pinger');
 
-app.listen(PORT, () => console.log(`Server on ${PORT}`));
+app.listen(PORT, () => {
+    console.log(`Server on ${PORT}`);
+    startPinger(); // Démarre le ping centralisé des bots
+});
 
 // --- Auto Health Ping (évite le sleep sur Render/Koyeb) ---
 const SELF_URL = process.env.RENDER_EXTERNAL_URL || process.env.APP_URL || (process.env.KOYEB_PUBLIC_DOMAIN ? `https://${process.env.KOYEB_PUBLIC_DOMAIN}` : null) || `http://localhost:${PORT}`;

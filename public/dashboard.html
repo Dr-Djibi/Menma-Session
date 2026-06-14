@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,12 +8,13 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Chart.js for professional histograms -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
+
     <style>
         :root {
             --bg-color: #08050e;
@@ -42,7 +44,7 @@
 
         body {
             background-color: var(--bg-color);
-            background-image: 
+            background-image:
                 radial-gradient(at 5% 5%, rgba(147, 51, 234, 0.18) 0px, transparent 40%),
                 radial-gradient(at 95% 95%, rgba(236, 72, 153, 0.12) 0px, transparent 40%);
             color: var(--text-color);
@@ -71,8 +73,15 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .auth-logo {
@@ -122,7 +131,7 @@
             box-shadow: 0 0 10px var(--primary-glow);
         }
 
-        .auth-input:focus + i {
+        .auth-input:focus+i {
             color: var(--primary);
         }
 
@@ -154,9 +163,19 @@
         }
 
         @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-6px); }
-            75% { transform: translateX(6px); }
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-6px);
+            }
+
+            75% {
+                transform: translateX(6px);
+            }
         }
 
         /* --- DASHBOARD WRAPPER --- */
@@ -261,9 +280,17 @@
             background: linear-gradient(to bottom, var(--primary), var(--accent));
         }
 
-        .stat-card.koyeb::before { background: var(--koyeb-color); }
-        .stat-card.render::before { background: var(--render-color); }
-        .stat-card.panel::before { background: var(--panel-color); }
+        .stat-card.koyeb::before {
+            background: var(--koyeb-color);
+        }
+
+        .stat-card.render::before {
+            background: var(--render-color);
+        }
+
+        .stat-card.panel::before {
+            background: var(--panel-color);
+        }
 
         .stat-card:hover {
             transform: translateY(-5px);
@@ -291,9 +318,20 @@
             -webkit-text-fill-color: transparent;
         }
 
-        .stat-card.koyeb .stat-number { background: linear-gradient(135deg, #fff, var(--koyeb-color)); -webkit-background-clip: text; }
-        .stat-card.render .stat-number { background: linear-gradient(135deg, #fff, var(--render-color)); -webkit-background-clip: text; }
-        .stat-card.panel .stat-number { background: linear-gradient(135deg, #fff, var(--panel-color)); -webkit-background-clip: text; }
+        .stat-card.koyeb .stat-number {
+            background: linear-gradient(135deg, #fff, var(--koyeb-color));
+            -webkit-background-clip: text;
+        }
+
+        .stat-card.render .stat-number {
+            background: linear-gradient(135deg, #fff, var(--render-color));
+            -webkit-background-clip: text;
+        }
+
+        .stat-card.panel .stat-number {
+            background: linear-gradient(135deg, #fff, var(--panel-color));
+            -webkit-background-clip: text;
+        }
 
         .stat-icon {
             font-size: clamp(1.4rem, 4vw, 2rem);
@@ -547,10 +585,18 @@
 
         /* Masquer certaines colonnes sur mobile */
         @media (max-width: 640px) {
-            .col-session, .col-date, .col-action { display: none; }
+
+            .col-session,
+            .col-date,
+            .col-action {
+                display: none;
+            }
         }
+
         @media (max-width: 480px) {
-            .col-number { display: none; }
+            .col-number {
+                display: none;
+            }
         }
 
         .session-id-cell {
@@ -655,18 +701,120 @@
             font-size: 1.1rem;
         }
 
+        /* --- ONLINE / OFFLINE BADGE --- */
+        .status-dot {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            padding: 3px 9px;
+            border-radius: 20px;
+            white-space: nowrap;
+        }
+        .status-dot.online {
+            background: rgba(16, 185, 129, 0.12);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        .status-dot.offline {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.25);
+        }
+        .status-dot::before {
+            content: '';
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: currentColor;
+            flex-shrink: 0;
+        }
+        .status-dot.online::before {
+            box-shadow: 0 0 6px #10b981;
+            animation: pulse-green 1.8s infinite;
+        }
+        @keyframes pulse-green {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        /* --- EXPANDABLE DETAIL ROW --- */
+        .detail-row td {
+            padding: 0 !important;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .detail-panel {
+            display: none;
+            padding: 1.2rem 1.4rem;
+            background: rgba(0,0,0,0.25);
+            border-top: 1px solid rgba(147,51,234,0.15);
+            animation: slideDown 0.25s ease;
+        }
+        .detail-panel.open {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 1rem;
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-6px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+        .detail-label {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+        .detail-value {
+            font-size: 0.88rem;
+            color: var(--text-color);
+            font-weight: 500;
+            word-break: break-all;
+        }
+        .detail-value a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+        .detail-value a:hover { text-decoration: underline; }
+        .expand-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 6px;
+            transition: all 0.2s;
+            font-size: 0.85rem;
+        }
+        .expand-btn:hover, .expand-btn.open {
+            color: var(--primary);
+            background: rgba(147,51,234,0.1);
+        }
+        tr.clickable-row { cursor: pointer; }
+        tr.clickable-row:hover td { background-color: rgba(147,51,234,0.04); }
+
         /* Scrollbars customization */
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
         }
+
         ::-webkit-scrollbar-track {
             background: rgba(0, 0, 0, 0.1);
         }
+
         ::-webkit-scrollbar-thumb {
             background: var(--border-color);
             border-radius: 10px;
         }
+
         ::-webkit-scrollbar-thumb:hover {
             background: var(--primary);
         }
@@ -692,45 +840,71 @@
                 justify-content: flex-start;
                 padding-top: 1.5rem;
             }
+
             .auth-container {
                 padding: 2rem 1.2rem;
                 border-radius: 18px;
             }
-            .auth-logo { font-size: 2.2rem; }
+
+            .auth-logo {
+                font-size: 2.2rem;
+            }
+
             .dashboard-wrapper {
                 padding: 0 0.75rem;
                 gap: 1rem;
                 margin: 1rem auto;
             }
+
             .stats-grid {
                 grid-template-columns: repeat(2, 1fr);
                 gap: 0.75rem;
             }
-            .stat-card { border-radius: 14px; }
-            .panel { border-radius: 16px; padding: 1rem; }
-            .chart-wrapper { height: 240px; }
-            .country-list { max-height: 280px; }
+
+            .stat-card {
+                border-radius: 14px;
+            }
+
+            .panel {
+                border-radius: 16px;
+                padding: 1rem;
+            }
+
+            .chart-wrapper {
+                height: 240px;
+            }
+
+            .country-list {
+                max-height: 280px;
+            }
         }
 
         @media (max-width: 360px) {
-            .dashboard-wrapper { padding: 0 0.5rem; }
-            .stats-grid { gap: 0.5rem; }
+            .dashboard-wrapper {
+                padding: 0 0.5rem;
+            }
+
+            .stats-grid {
+                gap: 0.5rem;
+            }
         }
     </style>
 </head>
+
 <body>
 
     <!-- --- AUTH CONTAINER --- -->
     <div class="auth-container" id="authBox">
         <div class="auth-logo">MENMA-MD</div>
         <p class="auth-subtitle">Télémétrie & Statistiques Centralisées</p>
-        
+
         <form id="authForm" onsubmit="handleAuth(event)">
             <div class="input-group">
-                <input type="password" id="passwordField" class="auth-input" placeholder="Mot de passe administrateur" required autocomplete="current-password">
+                <input type="password" id="passwordField" class="auth-input" placeholder="Mot de passe administrateur"
+                    required autocomplete="current-password">
                 <i class="fa-solid fa-lock"></i>
             </div>
-            
+
             <button type="submit" class="btn-submit">
                 <span id="btnText"><i class="fa-solid fa-right-to-bracket"></i> Accéder au Dashboard</span>
             </button>
@@ -743,7 +917,7 @@
         <!-- HEADER -->
         <div class="dash-header">
             <div class="dash-title">
-                <h1>Dashboard de Télémétrie</h1>
+                <h1>MENMA Dashbord</h1>
                 <p>Relais de session et surveillance de la distribution des bots</p>
             </div>
             <button class="btn-logout" onclick="logout()"><i class="fa-solid fa-power-off"></i> Déconnexion</button>
@@ -753,12 +927,20 @@
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-info">
-                    <h3>Total Bots Actifs</h3>
+                    <h3>Total Enregistrés</h3>
                     <div class="stat-number" id="totalBots">0</div>
                 </div>
                 <div class="stat-icon"><i class="fa-solid fa-robot"></i></div>
             </div>
-            
+
+            <div class="stat-card" style="--card-accent: #10b981;">
+                <div class="stat-info">
+                    <h3>En Ligne</h3>
+                    <div class="stat-number" id="onlineBots" style="background: linear-gradient(135deg,#fff,#10b981);-webkit-background-clip:text;">0</div>
+                </div>
+                <div class="stat-icon" style="color:#10b981;"><i class="fa-solid fa-circle-check"></i></div>
+            </div>
+
             <div class="stat-card koyeb">
                 <div class="stat-info">
                     <h3>Koyeb</h3>
@@ -786,12 +968,12 @@
 
         <!-- MAIN CONTENT PANELS -->
         <div class="content-grid">
-            
+
             <!-- PANEL GAUCHE : STATS PAYS (LISTE / GRAPH SWITCH) -->
             <div class="panel">
                 <div class="panel-header">
                     <h2><i class="fa-solid fa-earth-africa"></i> Pays</h2>
-                    
+
                     <div class="view-toggle-buttons">
                         <button class="view-btn active" id="btnViewList" onclick="switchCountryView('list')">
                             <i class="fa-solid fa-list-ul"></i> Liste
@@ -801,12 +983,12 @@
                         </button>
                     </div>
                 </div>
-                
+
                 <!-- LIST VIEW -->
                 <div class="country-list" id="countryList">
                     <!-- Rempli dynamiquement -->
                 </div>
-                
+
                 <!-- CHART HISTOGRAM VIEW -->
                 <div class="chart-wrapper" id="countryChartWrapper" style="display: none;">
                     <canvas id="countryChart"></canvas>
@@ -817,16 +999,18 @@
             <div class="panel">
                 <div class="advanced-header">
                     <div class="panel-header">
-                        <h2><i class="fa-solid fa-circle-nodes"></i> Terminaux Connectés</h2>
+                        <h2><i class="fa-solid fa-circle-nodes"></i> Bots Connectés</h2>
                     </div>
-                    
+
                     <button class="btn-toggle-advanced" id="toggleAdvBtn" onclick="toggleAdvancedMode()">
                         <i class="fa-solid fa-eye-slash"></i> Mode Avancé Masqué
                     </button>
                 </div>
 
                 <div class="search-container">
-                    <input type="text" id="searchInput" class="search-input" placeholder="Rechercher par propriétaire, numéro, plateforme ou pays..." oninput="filterTable()">
+                    <input type="text" id="searchInput" class="search-input"
+                        placeholder="Rechercher par propriétaire, numéro, plateforme ou pays..."
+                        oninput="filterTable()">
                     <i class="fa-solid fa-magnifying-glass"></i>
                 </div>
 
@@ -834,6 +1018,7 @@
                     <table id="botsTable">
                         <thead>
                             <tr>
+                                <th></th>
                                 <th>Propriétaire</th>
                                 <th class="col-number">Numéro</th>
                                 <th>Pays</th>
@@ -854,34 +1039,30 @@
     </div>
 
     <footer>
-        Conçu pour <a href="https://github.com/Dr-Djibi/Menma-MD" target="_blank">MENMA-MD Bot</a> &copy; 2026
+        Conçu pour <a href="https://github.com/Dr-Djibi/Menma-MD" target="_blank">Dr Djibi</a> &copy; 2026
     </footer>
 
     <!-- LOGIC -->
     <script>
         let cachedData = null;
         let isAdvancedMode = false;
-        let activeCountryView = 'list'; // 'list' ou 'chart'
+        let activeCountryView = 'list';
         let countryChartInstance = null;
 
         async function handleAuth(event) {
             event.preventDefault();
             const password = document.getElementById('passwordField').value;
             const submitBtn = document.querySelector('.btn-submit');
-            
             submitBtn.style.opacity = '0.7';
             submitBtn.disabled = true;
-
             try {
                 const response = await fetch('/api/dashboard/stats', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ password })
                 });
-
                 if (response.ok) {
-                    const data = await response.json();
-                    cachedData = data;
+                    cachedData = await response.json();
                     sessionStorage.setItem('dash_pwd', password);
                     showDashboard();
                 } else {
@@ -910,10 +1091,7 @@
             document.getElementById('authBox').style.display = 'none';
             const dashBox = document.getElementById('dashBox');
             dashBox.style.display = 'flex';
-            setTimeout(() => {
-                dashBox.style.opacity = '1';
-            }, 50);
-
+            setTimeout(() => { dashBox.style.opacity = '1'; }, 50);
             renderData();
         }
 
@@ -922,56 +1100,52 @@
             location.reload();
         }
 
+        /* ---- Formatage de l'uptime ---- */
+        function formatUptime(seconds) {
+            if (!seconds && seconds !== 0) return '—';
+            const d = Math.floor(seconds / 86400);
+            const h = Math.floor((seconds % 86400) / 3600);
+            const m = Math.floor((seconds % 3600) / 60);
+            if (d > 0) return `${d}j ${h}h ${m}m`;
+            if (h > 0) return `${h}h ${m}m`;
+            return `${m}m`;
+        }
+
         function renderData() {
             if (!cachedData) return;
 
-            // 1. Total bots
-            document.getElementById('totalBots').innerText = cachedData.total;
+            // 1. Compteurs principaux
+            document.getElementById('totalBots').innerText  = cachedData.total;
+            document.getElementById('onlineBots').innerText = cachedData.totalOnline ?? 0;
 
-            // 2. Répartition par plateformes (Koyeb, Render, VPS/Panel)
-            let koyebCount = 0;
-            let renderCount = 0;
-            let panelCount = 0;
-
+            // 2. Répartition plateformes
+            let koyebCount = 0, renderCount = 0, panelCount = 0;
             if (cachedData.platforms) {
                 cachedData.platforms.forEach(p => {
                     const name = p.platform.toLowerCase();
-                    if (name.includes('koyeb')) {
-                        koyebCount += p.count;
-                    } else if (name.includes('render')) {
-                        renderCount += p.count;
-                    } else {
-                        // VPS, Local, Panel / Pterodactyl ou Autre
-                        panelCount += p.count;
-                    }
+                    if (name.includes('koyeb'))  koyebCount  += p.count;
+                    else if (name.includes('render')) renderCount += p.count;
+                    else panelCount += p.count;
                 });
             }
-
-            document.getElementById('koyebBots').innerText = koyebCount;
+            document.getElementById('koyebBots').innerText  = koyebCount;
             document.getElementById('renderBots').innerText = renderCount;
-            document.getElementById('panelBots').innerText = panelCount;
+            document.getElementById('panelBots').innerText  = panelCount;
 
-            // 3. Charger les pays (Vue Liste & Initialiser le graphe en histogramme)
             renderCountryStats();
-
-            // 4. Tableau des bots
             renderBotsTable();
         }
 
         function renderCountryStats() {
             const countryList = document.getElementById('countryList');
             countryList.innerHTML = '';
-            
             if (!cachedData || cachedData.countries.length === 0) {
                 countryList.innerHTML = '<div class="no-data">Aucune donnée géographique.</div>';
                 return;
             }
-
-            // A. Affichage Mode Liste
             const maxCount = cachedData.countries[0].count;
             cachedData.countries.forEach(c => {
                 const percentage = maxCount > 0 ? (c.count / maxCount) * 100 : 0;
-                
                 const item = document.createElement('div');
                 item.className = 'country-item';
                 item.innerHTML = `
@@ -980,85 +1154,47 @@
                         <span class="country-count">${c.count} ${c.count > 1 ? 'bots' : 'bot'}</span>
                     </div>
                     <div class="progress-bar-bg">
-                        <div class="progress-bar-fill" style="width: 0%"></div>
-                    </div>
-                `;
+                        <div class="progress-bar-fill" style="width:0%"></div>
+                    </div>`;
                 countryList.appendChild(item);
-                
                 setTimeout(() => {
                     const fill = item.querySelector('.progress-bar-fill');
                     if (fill) fill.style.width = `${percentage}%`;
                 }, 100);
             });
-
-            // B. Générer le Graphique (Chart.js Histogram)
             initCountryChart();
         }
 
         function initCountryChart() {
             const ctx = document.getElementById('countryChart');
             if (!ctx) return;
-
-            // Détruire l'ancienne instance si elle existe
-            if (countryChartInstance) {
-                countryChartInstance.destroy();
-            }
-
-            const countriesLabels = cachedData.countries.map(c => c.country);
-            const countriesValues = cachedData.countries.map(c => c.count);
-
-            // Créer le graphe histogramme professionnel
+            if (countryChartInstance) countryChartInstance.destroy();
             countryChartInstance = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: countriesLabels,
+                    labels: cachedData.countries.map(c => c.country),
                     datasets: [{
                         label: 'Nombre de bots',
-                        data: countriesValues,
-                        backgroundColor: 'rgba(147, 51, 234, 0.7)',
-                        borderColor: 'rgba(236, 72, 153, 1)',
+                        data: cachedData.countries.map(c => c.count),
+                        backgroundColor: 'rgba(147,51,234,0.7)',
+                        borderColor: 'rgba(236,72,153,1)',
                         borderWidth: 2,
                         borderRadius: 8,
-                        hoverBackgroundColor: 'rgba(236, 72, 153, 0.8)',
+                        hoverBackgroundColor: 'rgba(236,72,153,0.8)'
                     }]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            backgroundColor: 'rgba(18, 11, 32, 0.95)',
-                            titleFont: { family: 'Outfit', size: 13, weight: '600' },
-                            bodyFont: { family: 'Outfit', size: 13 },
-                            borderColor: 'rgba(147, 51, 234, 0.3)',
-                            borderWidth: 1,
-                            padding: 10,
-                            displayColors: false
-                        }
-                    },
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false }, tooltip: {
+                        backgroundColor: 'rgba(18,11,32,0.95)',
+                        titleFont: { family: 'Outfit', size: 13, weight: '600' },
+                        bodyFont:  { family: 'Outfit', size: 13 },
+                        borderColor: 'rgba(147,51,234,0.3)', borderWidth: 1,
+                        padding: 10, displayColors: false
+                    }},
                     scales: {
-                        x: {
-                            grid: {
-                                display: false
-                            },
-                            ticks: {
-                                color: '#8b7fa4',
-                                font: { family: 'Outfit', size: 11 }
-                            }
-                        },
-                        y: {
-                            grid: {
-                                color: 'rgba(147, 51, 234, 0.08)'
-                            },
-                            ticks: {
-                                stepSize: 1,
-                                color: '#8b7fa4',
-                                font: { family: 'Outfit', size: 11 }
-                            }
-                        }
+                        x: { grid: { display: false }, ticks: { color: '#8b7fa4', font: { family: 'Outfit', size: 11 }}},
+                        y: { grid: { color: 'rgba(147,51,234,0.08)' }, ticks: { stepSize: 1, color: '#8b7fa4', font: { family: 'Outfit', size: 11 }}}
                     }
                 }
             });
@@ -1066,68 +1202,129 @@
 
         function switchCountryView(view) {
             activeCountryView = view;
-            const btnList = document.getElementById('btnViewList');
-            const btnChart = document.getElementById('btnViewChart');
-            const countryList = document.getElementById('countryList');
+            const btnList    = document.getElementById('btnViewList');
+            const btnChart   = document.getElementById('btnViewChart');
+            const countryList= document.getElementById('countryList');
             const chartWrapper = document.getElementById('countryChartWrapper');
-
             if (view === 'list') {
-                btnList.classList.add('active');
-                btnChart.classList.remove('active');
-                countryList.style.display = 'flex';
-                chartWrapper.style.display = 'none';
+                btnList.classList.add('active'); btnChart.classList.remove('active');
+                countryList.style.display = 'flex'; chartWrapper.style.display = 'none';
             } else {
-                btnChart.classList.add('active');
-                btnList.classList.remove('active');
-                countryList.style.display = 'none';
-                chartWrapper.style.display = 'block';
-                // Resize Chart.js to fit the container
-                if (countryChartInstance) {
-                    countryChartInstance.resize();
-                }
+                btnChart.classList.add('active'); btnList.classList.remove('active');
+                countryList.style.display = 'none'; chartWrapper.style.display = 'block';
+                if (countryChartInstance) countryChartInstance.resize();
             }
         }
 
+        /* ---- Tableau des bots avec ligne expandable ---- */
         function renderBotsTable() {
             const tableBody = document.getElementById('botsTableBody');
             tableBody.innerHTML = '';
 
             if (!cachedData || cachedData.bots.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="7" class="no-data">Aucun bot actif enregistré dans la base de données.</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="8" class="no-data">Aucun bot enregistré dans la base de données.</td></tr>';
                 return;
             }
 
-            cachedData.bots.forEach(bot => {
-                const row = document.createElement('tr');
-                
-                // Formater la date
+            cachedData.bots.forEach((bot, idx) => {
                 const date = new Date(bot.last_active);
-                const options = { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' };
-                const formattedDate = date.toLocaleDateString('fr-FR', options);
+                const formattedDate = date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 
-                // Masquage si mode avancé désactivé
-                const nameDisplay = isAdvancedMode ? bot.owner_name : 'Masqué (Admin)';
-                const numDisplay = isAdvancedMode ? `+${bot.owner_number}` : '**********';
-                const sessionDisplay = isAdvancedMode ? bot.session_id : 'Menma_md_****************';
-                
-                // Plateforme badge styling
-                const platformClass = bot.platform ? bot.platform.toLowerCase().replace(/\s/g, '').split('/')[0] : 'autre';
-                const platformLabel = bot.platform || 'Autre';
+                const nameDisplay    = isAdvancedMode ? bot.owner_name    : 'Masqué';
+                const numDisplay     = isAdvancedMode ? `+${bot.owner_number}` : '**********';
+                const sessionDisplay = isAdvancedMode ? bot.session_id    : 'Menma_md_****************';
+                const platformClass  = bot.platform ? bot.platform.toLowerCase().replace(/\s/g, '').split('/')[0] : 'autre';
+                const platformLabel  = bot.platform || 'Autre';
+                const isOnline       = bot.is_online === true;
+                const statusClass    = isOnline ? 'online' : 'offline';
+                const statusLabel    = isOnline ? 'En ligne' : 'Hors ligne';
+                const detailId       = `detail_${idx}`;
+                const expandId       = `expbtn_${idx}`;
 
+                // --- Ligne principale ---
+                const row = document.createElement('tr');
+                row.className = 'clickable-row';
+                row.setAttribute('data-idx', idx);
                 row.innerHTML = `
-                    <td style="font-weight: 600;">${nameDisplay}</td>
+                    <td><span class="status-dot ${statusClass}">${statusLabel}</span></td>
+                    <td style="font-weight:600">${nameDisplay}</td>
                     <td class="col-number"><span class="${!isAdvancedMode ? 'blur-masked' : ''}">${numDisplay}</span></td>
                     <td><span class="badge-country">${bot.country}</span></td>
                     <td><span class="badge-platform ${platformClass}">${platformLabel}</span></td>
                     <td class="col-session">
-                        <span class="session-id-cell ${!isAdvancedMode ? 'blur-masked' : ''}" id="session_${bot.session_id}">${sessionDisplay}</span>
+                        <span class="session-id-cell ${!isAdvancedMode ? 'blur-masked' : ''}">${sessionDisplay}</span>
                     </td>
                     <td class="col-date"><span class="last-active-time"><i class="fa-regular fa-clock"></i> ${formattedDate}</span></td>
                     <td class="col-action action-cell">
-                        ${isAdvancedMode ? `<button onclick="copySession('${bot.session_id}')" title="Copier la session ID"><i class="fa-solid fa-copy"></i></button>` : ''}
-                    </td>
-                `;
+                        <button class="expand-btn" id="${expandId}" title="Voir les détails">
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </button>
+                    </td>`;
                 tableBody.appendChild(row);
+
+                // --- Ligne de détail (expandable) ---
+                const detailRow = document.createElement('tr');
+                detailRow.className = 'detail-row';
+                const urlDisplay = bot.bot_url
+                    ? (isAdvancedMode ? `<a href="${bot.bot_url}/health" target="_blank">${bot.bot_url}</a>` : '******.app')
+                    : '<span style="color:var(--text-muted)">Non enregistrée</span>';
+
+                detailRow.innerHTML = `
+                    <td colspan="8">
+                        <div class="detail-panel" id="${detailId}">
+                            <div class="detail-item">
+                                <span class="detail-label"><i class="fa-solid fa-user"></i> Propriétaire</span>
+                                <span class="detail-value">${isAdvancedMode ? bot.owner_name : '— Masqué —'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label"><i class="fa-solid fa-phone"></i> Numéro</span>
+                                <span class="detail-value ${!isAdvancedMode ? 'blur-masked' : ''}">+${bot.owner_number}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label"><i class="fa-solid fa-earth-africa"></i> Pays</span>
+                                <span class="detail-value">${bot.country}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label"><i class="fa-solid fa-server"></i> Plateforme</span>
+                                <span class="detail-value"><span class="badge-platform ${platformClass}">${platformLabel}</span></span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label"><i class="fa-solid fa-link"></i> URL du bot</span>
+                                <span class="detail-value">${urlDisplay}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label"><i class="fa-solid fa-stopwatch"></i> Uptime</span>
+                                <span class="detail-value">${formatUptime(bot.uptime_sec)}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label"><i class="fa-solid fa-fingerprint"></i> Session ID</span>
+                                <span class="detail-value ${!isAdvancedMode ? 'blur-masked' : ''}" style="font-family:monospace;font-size:0.78rem">
+                                    ${sessionDisplay}
+                                    ${isAdvancedMode ? `<button onclick="copySession('${bot.session_id}')" style="margin-left:6px;background:transparent;border:none;color:var(--primary);cursor:pointer"><i class="fa-solid fa-copy"></i></button>` : ''}
+                                </span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label"><i class="fa-regular fa-clock"></i> Dernière activité</span>
+                                <span class="detail-value">${formattedDate}</span>
+                            </div>
+                        </div>
+                    </td>`;
+                tableBody.appendChild(detailRow);
+
+                // Toggle expand au clic sur la ligne ou le bouton
+                function toggleDetail(e) {
+                    e.stopPropagation();
+                    const panel = document.getElementById(detailId);
+                    const btn   = document.getElementById(expandId);
+                    const isOpen = panel.classList.contains('open');
+                    panel.classList.toggle('open', !isOpen);
+                    btn.classList.toggle('open', !isOpen);
+                    btn.innerHTML = isOpen
+                        ? '<i class="fa-solid fa-chevron-down"></i>'
+                        : '<i class="fa-solid fa-chevron-up"></i>';
+                }
+                row.addEventListener('click', toggleDetail);
+                document.getElementById(expandId).addEventListener('click', toggleDetail);
             });
         }
 
@@ -1178,4 +1375,5 @@
         });
     </script>
 </body>
+
 </html>
