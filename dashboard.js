@@ -11,7 +11,7 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false }
 });
 
-const DASHBOARD_PASSWORD = process.env.DASHBOARD_PASSWORD || 'MenmaAdmin2026';
+const DASHBOARD_PASSWORD = process.env.DASHBOARD_PASSWORD;
 
 router.post('/stats', async (req, res) => {
   const { password } = req.body;
