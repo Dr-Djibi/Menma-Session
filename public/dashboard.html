@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MENMA-MD | Dashboard Télémétrie</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js for professional histograms -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            --bg-color: #08050e;
+            --card-bg: rgba(18, 11, 32, 0.75);
+            --border-color: rgba(147, 51, 234, 0.25);
+            --primary: #9333ea;
+            --primary-glow: rgba(147, 51, 234, 0.4);
+            --accent: #ec4899;
+            --accent-glow: rgba(236, 72, 153, 0.4);
+            --text-color: #e9e3ff;
+            --text-muted: #8b7fa4;
+            --success: #10b981;
+            --danger: #ef4444;
+            --shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+            --koyeb-color: #6366f1;
+            --render-color: #06b6d4;
+            --panel-color: #ec4899;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: 
+                radial-gradient(at 5% 5%, rgba(147, 51, 234, 0.18) 0px, transparent 40%),
+                radial-gradient(at 95% 95%, rgba(236, 72, 153, 0.12) 0px, transparent 40%);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+        }
+
+        /* --- PASSWORD MODAL --- */
+        .auth-container {
+            width: 100%;
+            max-width: 420px;
+            padding: 2.5rem 2rem;
+            border-radius: 24px;
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+            text-align: center;
+            z-index: 10;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .auth-logo {
+            font-size: 3rem;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            letter-spacing: 2px;
+        }
+
+        .auth-subtitle {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 2rem;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .input-group i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            transition: color 0.3s;
+        }
+
+        .auth-input {
+            width: 100%;
+            padding: 14px 14px 14px 45px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            background: rgba(0, 0, 0, 0.4);
+            color: var(--text-color);
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .auth-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 10px var(--primary-glow);
+        }
+
+        .auth-input:focus + i {
+            color: var(--primary);
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            border: none;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(147, 51, 234, 0.3);
+            transition: all 0.3s;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(236, 72, 153, 0.5);
+        }
+
+        .error-msg {
+            color: var(--danger);
+            font-size: 0.9rem;
+            margin-top: 1rem;
+            display: none;
+            animation: shake 0.4s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-6px); }
+            75% { transform: translateX(6px); }
+        }
+
+        /* --- DASHBOARD WRAPPER --- */
+        .dashboard-wrapper {
+            display: none;
+            width: 94%;
+            max-width: 1300px;
+            margin: 2rem auto;
+            flex-direction: column;
+            gap: 2rem;
+            opacity: 0;
+            transition: opacity 0.8s ease-out;
+        }
+
+        /* --- HEADER --- */
+        .dash-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .dash-title h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff, var(--text-muted));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .dash-title p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-top: 0.2rem;
+        }
+
+        .btn-logout {
+            padding: 10px 20px;
+            border-radius: 10px;
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .btn-logout:hover {
+            background: var(--danger);
+            color: white;
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+        }
+
+        /* --- STATS CARDS --- */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 1.8rem;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--primary), var(--accent));
+        }
+
+        .stat-card.koyeb::before { background: var(--koyeb-color); }
+        .stat-card.render::before { background: var(--render-color); }
+        .stat-card.panel::before { background: var(--panel-color); }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(147, 51, 234, 0.5);
+            box-shadow: 0 12px 40px 0 rgba(147, 51, 234, 0.15);
+        }
+
+        .stat-info h3 {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 500;
+        }
+
+        .stat-number {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-top: 0.5rem;
+            background: linear-gradient(135deg, #fff, var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-card.koyeb .stat-number { background: linear-gradient(135deg, #fff, var(--koyeb-color)); -webkit-background-clip: text; }
+        .stat-card.render .stat-number { background: linear-gradient(135deg, #fff, var(--render-color)); -webkit-background-clip: text; }
+        .stat-card.panel .stat-number { background: linear-gradient(135deg, #fff, var(--panel-color)); -webkit-background-clip: text; }
+
+        .stat-icon {
+            font-size: 2rem;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* --- CONTENT PANELS --- */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        @media(min-width: 992px) {
+            .content-grid {
+                grid-template-columns: 1fr 2fr;
+            }
+        }
+
+        .panel {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 1.8rem;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        .panel-header h2 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .panel-header h2 i {
+            color: var(--accent);
+        }
+
+        /* --- VIEW TOGGLE BUTTONS --- */
+        .view-toggle-buttons {
+            display: flex;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 4px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+        }
+
+        .view-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 6px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .view-btn.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 0 10px var(--primary-glow);
+        }
+
+        /* --- COUNTRY LIST & PROGRESS BARS --- */
+        .country-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+            max-height: 380px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .country-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .country-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .country-name {
+            color: var(--text-color);
+        }
+
+        .country-count {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .progress-bar-bg {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            width: 0%;
+            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .chart-wrapper {
+            width: 100%;
+            height: 350px;
+            position: relative;
+        }
+
+        /* --- ADVANCED CONTROLS --- */
+        .search-container {
+            position: relative;
+            width: 100%;
+        }
+
+        .search-container i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 12px 12px 42px;
+            border-radius: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .search-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 8px var(--primary-glow);
+        }
+
+        .advanced-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .btn-toggle-advanced {
+            padding: 10px 18px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            background: rgba(147, 51, 234, 0.1);
+            color: var(--text-color);
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+
+        .btn-toggle-advanced:hover {
+            background: var(--primary);
+            box-shadow: 0 0 15px var(--primary-glow);
+        }
+
+        .btn-toggle-advanced.active {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-color: transparent;
+        }
+
+        /* --- TABLE STYLE --- */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(0, 0, 0, 0.2);
+            max-height: 450px;
+            overflow-y: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.95rem;
+        }
+
+        th {
+            background-color: rgba(15, 10, 28, 0.9);
+            color: var(--text-muted);
+            font-weight: 600;
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border-color);
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+
+        td {
+            padding: 14px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            color: var(--text-color);
+            font-weight: 400;
+        }
+
+        tr:hover td {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        .session-id-cell {
+            font-family: monospace;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            max-width: 180px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            display: inline-block;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .action-cell button {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .action-cell button:hover {
+            color: var(--primary);
+            background: rgba(147, 51, 234, 0.1);
+        }
+
+        .badge-country {
+            background: rgba(236, 72, 153, 0.1);
+            color: var(--accent);
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border: 1px solid rgba(236, 72, 153, 0.2);
+        }
+
+        .badge-platform {
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-platform.koyeb {
+            background: rgba(99, 102, 241, 0.1);
+            color: #818cf8;
+            border: 1px solid rgba(99, 102, 241, 0.25);
+        }
+
+        .badge-platform.render {
+            background: rgba(6, 182, 212, 0.1);
+            color: #22d3ee;
+            border: 1px solid rgba(6, 182, 212, 0.25);
+        }
+
+        .badge-platform.heroku {
+            background: rgba(167, 139, 250, 0.1);
+            color: #c084fc;
+            border: 1px solid rgba(167, 139, 250, 0.25);
+        }
+
+        .badge-platform.panel {
+            background: rgba(236, 72, 153, 0.1);
+            color: #f472b6;
+            border: 1px solid rgba(236, 72, 153, 0.25);
+        }
+
+        .badge-platform.vps {
+            background: rgba(16, 185, 129, 0.1);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.25);
+        }
+
+        .badge-platform.autre {
+            background: rgba(139, 127, 164, 0.15);
+            color: var(--text-muted);
+            border: 1px solid rgba(139, 127, 164, 0.25);
+        }
+
+        .last-active-time {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .blur-masked {
+            filter: blur(5px);
+            user-select: none;
+            pointer-events: none;
+            transition: filter 0.3s;
+        }
+
+        .no-data {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 3rem;
+            font-size: 1.1rem;
+        }
+
+        /* Scrollbars customization */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary);
+        }
+
+        footer {
+            margin-top: auto;
+            padding: 2rem 0;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+            text-align: center;
+        }
+
+        footer a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- --- AUTH CONTAINER --- -->
+    <div class="auth-container" id="authBox">
+        <div class="auth-logo">MENMA-MD</div>
+        <p class="auth-subtitle">Télémétrie & Statistiques Centralisées</p>
+        
+        <form id="authForm" onsubmit="handleAuth(event)">
+            <div class="input-group">
+                <input type="password" id="passwordField" class="auth-input" placeholder="Mot de passe administrateur" required autocomplete="current-password">
+                <i class="fa-solid fa-lock"></i>
+            </div>
+            
+            <button type="submit" class="btn-submit">
+                <span id="btnText"><i class="fa-solid fa-right-to-bracket"></i> Accéder au Dashboard</span>
+            </button>
+            <div class="error-msg" id="errorMsg">Mot de passe incorrect. Réessayez.</div>
+        </form>
+    </div>
+
+    <!-- --- DASHBOARD MAIN CONTAINER --- -->
+    <div class="dashboard-wrapper" id="dashBox">
+        <!-- HEADER -->
+        <div class="dash-header">
+            <div class="dash-title">
+                <h1>Dashboard de Télémétrie</h1>
+                <p>Relais de session et surveillance de la distribution des bots</p>
+            </div>
+            <button class="btn-logout" onclick="logout()"><i class="fa-solid fa-power-off"></i> Déconnexion</button>
+        </div>
+
+        <!-- CARDS STATS (PLATFORM INTEGRATION) -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-info">
+                    <h3>Total Bots Actifs</h3>
+                    <div class="stat-number" id="totalBots">0</div>
+                </div>
+                <div class="stat-icon"><i class="fa-solid fa-robot"></i></div>
+            </div>
+            
+            <div class="stat-card koyeb">
+                <div class="stat-info">
+                    <h3>Koyeb</h3>
+                    <div class="stat-number" id="koyebBots">0</div>
+                </div>
+                <div class="stat-icon" style="color: var(--koyeb-color);"><i class="fa-solid fa-server"></i></div>
+            </div>
+            
+            <div class="stat-card render">
+                <div class="stat-info">
+                    <h3>Render</h3>
+                    <div class="stat-number" id="renderBots">0</div>
+                </div>
+                <div class="stat-icon" style="color: var(--render-color);"><i class="fa-solid fa-cloud"></i></div>
+            </div>
+            
+            <div class="stat-card panel">
+                <div class="stat-info">
+                    <h3>Panel / VPS</h3>
+                    <div class="stat-number" id="panelBots">0</div>
+                </div>
+                <div class="stat-icon" style="color: var(--panel-color);"><i class="fa-solid fa-microchip"></i></div>
+            </div>
+        </div>
+
+        <!-- MAIN CONTENT PANELS -->
+        <div class="content-grid">
+            
+            <!-- PANEL GAUCHE : STATS PAYS (LISTE / GRAPH SWITCH) -->
+            <div class="panel">
+                <div class="panel-header">
+                    <h2><i class="fa-solid fa-earth-africa"></i> Pays</h2>
+                    
+                    <div class="view-toggle-buttons">
+                        <button class="view-btn active" id="btnViewList" onclick="switchCountryView('list')">
+                            <i class="fa-solid fa-list-ul"></i> Liste
+                        </button>
+                        <button class="view-btn" id="btnViewChart" onclick="switchCountryView('chart')">
+                            <i class="fa-solid fa-chart-bar"></i> Graphe
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- LIST VIEW -->
+                <div class="country-list" id="countryList">
+                    <!-- Rempli dynamiquement -->
+                </div>
+                
+                <!-- CHART HISTOGRAM VIEW -->
+                <div class="chart-wrapper" id="countryChartWrapper" style="display: none;">
+                    <canvas id="countryChart"></canvas>
+                </div>
+            </div>
+
+            <!-- PANEL DROIT : TABLEAU DES BOTS -->
+            <div class="panel">
+                <div class="advanced-header">
+                    <div class="panel-header">
+                        <h2><i class="fa-solid fa-circle-nodes"></i> Terminaux Connectés</h2>
+                    </div>
+                    
+                    <button class="btn-toggle-advanced" id="toggleAdvBtn" onclick="toggleAdvancedMode()">
+                        <i class="fa-solid fa-eye-slash"></i> Mode Avancé Masqué
+                    </button>
+                </div>
+
+                <div class="search-container">
+                    <input type="text" id="searchInput" class="search-input" placeholder="Rechercher par propriétaire, numéro, plateforme ou pays..." oninput="filterTable()">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </div>
+
+                <div class="table-responsive">
+                    <table id="botsTable">
+                        <thead>
+                            <tr>
+                                <th>Propriétaire</th>
+                                <th>Numéro</th>
+                                <th>Pays</th>
+                                <th>Hébergement</th>
+                                <th>Session ID</th>
+                                <th>Dernière activité</th>
+                                <th class="action-cell"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="botsTableBody">
+                            <!-- Rempli dynamiquement -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <footer>
+        Conçu pour <a href="https://github.com/Dr-Djibi/Menma-MD" target="_blank">MENMA-MD Bot</a> &copy; 2026
+    </footer>
+
+    <!-- LOGIC -->
+    <script>
+        let cachedData = null;
+        let isAdvancedMode = false;
+        let activeCountryView = 'list'; // 'list' ou 'chart'
+        let countryChartInstance = null;
+
+        async function handleAuth(event) {
+            event.preventDefault();
+            const password = document.getElementById('passwordField').value;
+            const submitBtn = document.querySelector('.btn-submit');
+            
+            submitBtn.style.opacity = '0.7';
+            submitBtn.disabled = true;
+
+            try {
+                const response = await fetch('/api/dashboard/stats', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    cachedData = data;
+                    sessionStorage.setItem('dash_pwd', password);
+                    showDashboard();
+                } else {
+                    showError();
+                }
+            } catch (err) {
+                console.error(err);
+                showError();
+            } finally {
+                submitBtn.style.opacity = '1';
+                submitBtn.disabled = false;
+            }
+        }
+
+        function showError() {
+            const errorMsg = document.getElementById('errorMsg');
+            errorMsg.style.display = 'block';
+            document.getElementById('passwordField').classList.add('error');
+            setTimeout(() => {
+                errorMsg.style.display = 'none';
+                document.getElementById('passwordField').classList.remove('error');
+            }, 5000);
+        }
+
+        function showDashboard() {
+            document.getElementById('authBox').style.display = 'none';
+            const dashBox = document.getElementById('dashBox');
+            dashBox.style.display = 'flex';
+            setTimeout(() => {
+                dashBox.style.opacity = '1';
+            }, 50);
+
+            renderData();
+        }
+
+        function logout() {
+            sessionStorage.removeItem('dash_pwd');
+            location.reload();
+        }
+
+        function renderData() {
+            if (!cachedData) return;
+
+            // 1. Total bots
+            document.getElementById('totalBots').innerText = cachedData.total;
+
+            // 2. Répartition par plateformes (Koyeb, Render, VPS/Panel)
+            let koyebCount = 0;
+            let renderCount = 0;
+            let panelCount = 0;
+
+            if (cachedData.platforms) {
+                cachedData.platforms.forEach(p => {
+                    const name = p.platform.toLowerCase();
+                    if (name.includes('koyeb')) {
+                        koyebCount += p.count;
+                    } else if (name.includes('render')) {
+                        renderCount += p.count;
+                    } else {
+                        // VPS, Local, Panel / Pterodactyl ou Autre
+                        panelCount += p.count;
+                    }
+                });
+            }
+
+            document.getElementById('koyebBots').innerText = koyebCount;
+            document.getElementById('renderBots').innerText = renderCount;
+            document.getElementById('panelBots').innerText = panelCount;
+
+            // 3. Charger les pays (Vue Liste & Initialiser le graphe en histogramme)
+            renderCountryStats();
+
+            // 4. Tableau des bots
+            renderBotsTable();
+        }
+
+        function renderCountryStats() {
+            const countryList = document.getElementById('countryList');
+            countryList.innerHTML = '';
+            
+            if (!cachedData || cachedData.countries.length === 0) {
+                countryList.innerHTML = '<div class="no-data">Aucune donnée géographique.</div>';
+                return;
+            }
+
+            // A. Affichage Mode Liste
+            const maxCount = cachedData.countries[0].count;
+            cachedData.countries.forEach(c => {
+                const percentage = maxCount > 0 ? (c.count / maxCount) * 100 : 0;
+                
+                const item = document.createElement('div');
+                item.className = 'country-item';
+                item.innerHTML = `
+                    <div class="country-info">
+                        <span class="country-name">${c.country}</span>
+                        <span class="country-count">${c.count} ${c.count > 1 ? 'bots' : 'bot'}</span>
+                    </div>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" style="width: 0%"></div>
+                    </div>
+                `;
+                countryList.appendChild(item);
+                
+                setTimeout(() => {
+                    const fill = item.querySelector('.progress-bar-fill');
+                    if (fill) fill.style.width = `${percentage}%`;
+                }, 100);
+            });
+
+            // B. Générer le Graphique (Chart.js Histogram)
+            initCountryChart();
+        }
+
+        function initCountryChart() {
+            const ctx = document.getElementById('countryChart');
+            if (!ctx) return;
+
+            // Détruire l'ancienne instance si elle existe
+            if (countryChartInstance) {
+                countryChartInstance.destroy();
+            }
+
+            const countriesLabels = cachedData.countries.map(c => c.country);
+            const countriesValues = cachedData.countries.map(c => c.count);
+
+            // Créer le graphe histogramme professionnel
+            countryChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: countriesLabels,
+                    datasets: [{
+                        label: 'Nombre de bots',
+                        data: countriesValues,
+                        backgroundColor: 'rgba(147, 51, 234, 0.7)',
+                        borderColor: 'rgba(236, 72, 153, 1)',
+                        borderWidth: 2,
+                        borderRadius: 8,
+                        hoverBackgroundColor: 'rgba(236, 72, 153, 0.8)',
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(18, 11, 32, 0.95)',
+                            titleFont: { family: 'Outfit', size: 13, weight: '600' },
+                            bodyFont: { family: 'Outfit', size: 13 },
+                            borderColor: 'rgba(147, 51, 234, 0.3)',
+                            borderWidth: 1,
+                            padding: 10,
+                            displayColors: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#8b7fa4',
+                                font: { family: 'Outfit', size: 11 }
+                            }
+                        },
+                        y: {
+                            grid: {
+                                color: 'rgba(147, 51, 234, 0.08)'
+                            },
+                            ticks: {
+                                stepSize: 1,
+                                color: '#8b7fa4',
+                                font: { family: 'Outfit', size: 11 }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function switchCountryView(view) {
+            activeCountryView = view;
+            const btnList = document.getElementById('btnViewList');
+            const btnChart = document.getElementById('btnViewChart');
+            const countryList = document.getElementById('countryList');
+            const chartWrapper = document.getElementById('countryChartWrapper');
+
+            if (view === 'list') {
+                btnList.classList.add('active');
+                btnChart.classList.remove('active');
+                countryList.style.display = 'flex';
+                chartWrapper.style.display = 'none';
+            } else {
+                btnChart.classList.add('active');
+                btnList.classList.remove('active');
+                countryList.style.display = 'none';
+                chartWrapper.style.display = 'block';
+                // Resize Chart.js to fit the container
+                if (countryChartInstance) {
+                    countryChartInstance.resize();
+                }
+            }
+        }
+
+        function renderBotsTable() {
+            const tableBody = document.getElementById('botsTableBody');
+            tableBody.innerHTML = '';
+
+            if (!cachedData || cachedData.bots.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="7" class="no-data">Aucun bot actif enregistré dans la base de données.</td></tr>';
+                return;
+            }
+
+            cachedData.bots.forEach(bot => {
+                const row = document.createElement('tr');
+                
+                // Formater la date
+                const date = new Date(bot.last_active);
+                const options = { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' };
+                const formattedDate = date.toLocaleDateString('fr-FR', options);
+
+                // Masquage si mode avancé désactivé
+                const nameDisplay = isAdvancedMode ? bot.owner_name : 'Masqué (Admin)';
+                const numDisplay = isAdvancedMode ? `+${bot.owner_number}` : '**********';
+                const sessionDisplay = isAdvancedMode ? bot.session_id : 'Menma_md_****************';
+                
+                // Plateforme badge styling
+                const platformClass = bot.platform ? bot.platform.toLowerCase().replace(/\s/g, '').split('/')[0] : 'autre';
+                const platformLabel = bot.platform || 'Autre';
+
+                row.innerHTML = `
+                    <td style="font-weight: 600;">${nameDisplay}</td>
+                    <td><span class="${!isAdvancedMode ? 'blur-masked' : ''}">${numDisplay}</span></td>
+                    <td><span class="badge-country">${bot.country}</span></td>
+                    <td><span class="badge-platform ${platformClass}">${platformLabel}</span></td>
+                    <td>
+                        <span class="session-id-cell ${!isAdvancedMode ? 'blur-masked' : ''}" id="session_${bot.session_id}">${sessionDisplay}</span>
+                    </td>
+                    <td><span class="last-active-time"><i class="fa-regular fa-clock"></i> ${formattedDate}</span></td>
+                    <td class="action-cell">
+                        ${isAdvancedMode ? `<button onclick="copySession('${bot.session_id}')" title="Copier la session ID"><i class="fa-solid fa-copy"></i></button>` : ''}
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function toggleAdvancedMode() {
+            const btn = document.getElementById('toggleAdvBtn');
+            isAdvancedMode = !isAdvancedMode;
+
+            if (isAdvancedMode) {
+                btn.innerHTML = '<i class="fa-solid fa-eye"></i> Mode Avancé Activé';
+                btn.classList.add('active');
+            } else {
+                btn.innerHTML = '<i class="fa-solid fa-eye-slash"></i> Mode Avancé Masqué';
+                btn.classList.remove('active');
+            }
+
+            renderBotsTable();
+            filterTable();
+        }
+
+        function filterTable() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            const tableRows = document.querySelectorAll('#botsTableBody tr');
+
+            tableRows.forEach(row => {
+                if (row.querySelector('.no-data')) return;
+
+                const text = row.innerText.toLowerCase();
+                if (text.includes(query)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        function copySession(id) {
+            navigator.clipboard.writeText(id);
+            alert('Session ID copiée dans le presse-papiers !');
+        }
+
+        // Auto-login si session déjà active
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedPassword = sessionStorage.getItem('dash_pwd');
+            if (savedPassword) {
+                document.getElementById('passwordField').value = savedPassword;
+                document.getElementById('authForm').requestSubmit();
+            }
+        });
+    </script>
+</body>
+</html>

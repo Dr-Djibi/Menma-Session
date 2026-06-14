@@ -11,14 +11,17 @@ app.use(express.json());
 // Routes pour l'API
 const qrRoute = require('./qr');
 const pairRoute = require('./pair');
+const dashboardRoute = require('./dashboard');
 
 app.use('/api/qr', qrRoute);
 app.use('/api/pair', pairRoute);
+app.use('/api/dashboard', dashboardRoute);
 
 // Routes pour les pages web
 app.get('/pair', (req, res) => res.sendFile(path.join(__dirname, 'public', 'pair.html')));
 app.get('/qr', (req, res) => res.sendFile(path.join(__dirname, 'public', 'qr.html')));
 app.get('/env', (req, res) => res.sendFile(path.join(__dirname, 'public', 'env.html')));
+app.get('/dashboard', (req, res) => res.sendFile(path.join(__dirname, 'public', 'dashboard.html')));
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
 
 const axios = require('axios');

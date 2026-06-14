@@ -35,7 +35,7 @@ router.get('/', async (req, res) => {
     let qrSent = false;
     let isFinished = false;
 
-    sessions.set(id, { status: 'pending', session: null });
+    sessions.set(id, { status: 'pending', session: null, sock: null, lastActive: Date.now() });
 
     const connectionHandler = async () => {
         if (isFinished) return;
@@ -52,6 +52,10 @@ router.get('/', async (req, res) => {
                 markOnlineOnConnect: false,
                 syncFullHistory: false,
             });
+
+            // Associer l'instance de la socket à la session
+            const sData = sessions.get(id);
+            if (sData) sData.sock = sock;
 
             sock.ev.on('creds.update', saveCreds);
 
@@ -154,7 +158,39 @@ router.get('/', async (req, res) => {
 router.get('/status/:id', (req, res) => {
     const state = sessions.get(req.params.id);
     if (!state) return res.status(404).json({ status: 'not_found' });
-    res.json(state);
+    
+    // Mettre à jour le dernier poll
+    state.lastActive = Date.now();
+    
+    res.json({
+        status: state.status,
+        session: state.session
+    });
 });
+
+// Garbage collector pour nettoyer les sockets inactifs
+setInterval(async () => {
+    const now = Date.now();
+    for (const [id, state] of sessions.entries()) {
+        // Si la session est en attente (pending) et n'a pas été interrogée depuis plus de 25 secondes
+        if (state.status === 'pending' && state.lastActive && (now - state.lastActive > 25000)) {
+            console.log(`[GC-QR] Nettoyage de la session inactive : ${id}`);
+            sessions.delete(id);
+            if (state.sock) {
+                try {
+                    state.sock.ev.removeAllListeners();
+                    if (state.sock.ws) state.sock.ws.close();
+                } catch (e) {}
+            }
+            const tempPath = path.join(__dirname, 'temp', id);
+            await fs.remove(tempPath).catch(() => {});
+        }
+        
+        // Nettoyage des sessions terminées de la mémoire après 5 minutes
+        if (state.status !== 'pending' && state.lastActive && (now - state.lastActive > 5 * 60 * 1000)) {
+            sessions.delete(id);
+        }
+    }
+}, 10000);
 
 module.exports = router;
