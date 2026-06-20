@@ -8,6 +8,76 @@ const PORT = process.env.PORT || 3000;
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
+// ── Chatbot (anciennement serveur.js) ─────────────────────────────────────────
+const waiters = new Map();
+
+// Le bot envoie la réponse IA ici
+app.get('/serveur/incoming', (req, res) => {
+  const { user_id, text } = req.query;
+  if (!user_id || !text) return res.json({ status: 400 });
+
+  const queue = waiters.get(user_id);
+  if (queue && queue.length > 0) {
+    const resolve = queue.shift();
+    resolve(text);
+    if (queue.length === 0) waiters.delete(user_id);
+  }
+
+  console.log(`[CHATBOT] Réponse IA pour ${user_id}: ${text.slice(0, 50)}...`);
+  res.json({ status: 200 });
+});
+
+// Le client web envoie son message et attend la réponse IA
+app.get('/serveur/chatbot', async (req, res) => {
+  const { user_id, text } = req.query;
+  if (!user_id || !text) return res.json({ status: 400 });
+
+  let queue = waiters.get(user_id);
+  if (!queue) {
+    queue = [];
+    waiters.set(user_id, queue);
+  }
+
+  let resolveFunc;
+  let resSent = false;
+
+  const responsePromise = new Promise(resolve => {
+    resolveFunc = resolve;
+    queue.push(resolve);
+
+    setTimeout(() => {
+      const idx = queue.indexOf(resolveFunc);
+      if (idx !== -1) queue.splice(idx, 1);
+      if (queue.length === 0) waiters.delete(user_id);
+      if (!resSent) {
+        resSent = true;
+        res.json({ text: null, timeout: true });
+      }
+    }, 15000);
+  });
+
+  try {
+    await axios.get('https://c1932.webapi.ai/cmc/user_message', {
+      params: { auth_token: 'i0n3d6ss', user_id, text }
+    });
+
+    const reply = await responsePromise;
+    if (!resSent) {
+      resSent = true;
+      res.json({ text: reply });
+    }
+  } catch (err) {
+    const idx = queue.indexOf(resolveFunc);
+    if (idx !== -1) queue.splice(idx, 1);
+    if (queue.length === 0) waiters.delete(user_id);
+    if (!resSent) {
+      resSent = true;
+      res.json({ status: 500 });
+    }
+  }
+});
+// ─────────────────────────────────────────────────────────────────────────────
+
 // Routes pour l'API
 const qrRoute = require('./qr');
 const pairRoute = require('./pair');
