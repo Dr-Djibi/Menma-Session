@@ -60,88 +60,117 @@ router.get('/', async (req, res) => {
             sock.ev.on('creds.update', saveCreds);
 
             sock.ev.on('connection.update', async (update) => {
-                const { connection, lastDisconnect, qr } = update;
-                console.log(`[${id}] Update: ${connection || 'pending'}, QR: ${!!qr}`);
+                try {
+                    const { connection, lastDisconnect, qr } = update;
+                    console.log(`[${id}] Update: ${connection || 'pending'}, QR: ${!!qr}`);
 
-                if (qr && !qrSent) {
-                    qrSent = true;
-                    if (res && !res.headersSent) {
-                        res.setHeader('Content-Type', 'image/png');
-                        res.send(await QRCode.toBuffer(qr));
+                    if (qr && !qrSent) {
+                        qrSent = true;
+                        if (res && !res.headersSent) {
+                            res.setHeader('Content-Type', 'image/png');
+                            res.send(await QRCode.toBuffer(qr));
+                        }
                     }
-                }
 
-                if (connection === 'close') {
-                    const reason = lastDisconnect?.error?.output?.statusCode;
-                    console.error(`[${id}] Closed. Reason: ${reason}`);
+                    if (connection === 'close') {
+                        const reason = lastDisconnect?.error?.output?.statusCode;
+                        console.error(`[${id}] Closed. Reason: ${reason}`);
 
-                    if (isFinished) return;
+                        if (isFinished) return;
 
-                    if (reason !== 401) {
-                        console.log(`[${id}] Reconnecting...`);
-                        setTimeout(connectionHandler, 2000);
-                    } else {
-                        sessions.set(id, { status: 'error', session: null });
+                        if (reason !== 401) {
+                            console.log(`[${id}] Reconnecting...`);
+                            setTimeout(connectionHandler, 2000);
+                        } else {
+                            sessions.set(id, { status: 'error', session: null });
+                            await fs.remove(tempPath).catch(() => { });
+                        }
+                    }
+
+                    if (connection === 'open') {
+                        console.log(`[${id}] ✅ Couplage réussi ! Vérification des crédentials...`);
+
+                        let retries = 0;
+                        while (retries < 10 && (!sock.authState.creds.me || !sock.authState.creds.registered)) {
+                            await delay(1000);
+                            retries++;
+                        }
+
+                        if (!sock.authState.creds.me || !sock.authState.creds.registered) {
+                            console.error(`[${id}] ❌ Échec : Creds incomplets.`);
+                            sessions.set(id, { status: 'error', session: null });
+                            return;
+                        }
+
+                        isFinished = true;
+                        const credsFile = path.join(tempPath, 'creds.json');
+
+                        // Lecture robuste avec retries pour parer aux lenteurs d'écriture disque
+                        let data = null;
+                        for (let i = 0; i < 15; i++) {
+                            try {
+                                if (await fs.pathExists(credsFile)) {
+                                    const rawData = await fs.readFile(credsFile, 'utf-8');
+                                    if (rawData.trim().length > 0) {
+                                        const parsed = JSON.parse(rawData);
+                                        if (parsed && parsed.me) {
+                                            data = rawData;
+                                            break;
+                                        }
+                                    }
+                                }
+                            } catch (readErr) {
+                                console.log(`[${id}] Attente de creds.json complet (${i+1}/15) : ${readErr.message}`);
+                            }
+                            await delay(1000);
+                        }
+
+                        if (!data) {
+                            throw new Error("Credentials invalides ou absents du fichier creds.json.");
+                        }
+
+                        // Upload to Pastebin
+                        let pasteId = "";
+                        try {
+                            pasteId = await pastebin.createPaste(data, "Menma-MD Session");
+                            if (pasteId.includes("pastebin.com/")) {
+                                pasteId = pasteId.split("/").pop();
+                            }
+                        } catch (pErr) {
+                            console.error(`[${id}] Pastebin error:`, pErr.message);
+                            pasteId = Buffer.from(data).toString('base64');
+                        }
+
+                        const b64data = "Menma_md_" + pasteId + "_SESSION_ID";
+                        sessions.set(id, { status: 'success', session: b64data });
+
+                        const imgUrl = "https://files.catbox.moe/oh71s4.jpg";
+                        const msg = `🚀 *𝙼𝙴𝙽𝙼𝙰-𝙼𝙳 𝚂𝙴𝚂𝚂𝙸𝙾𝙽*\n\n✅ *Connexion Réussie*\n\n🔑 *Session ID* :\n\`${b64data}\`\n\n⚠️ *SÉCURITÉ* : Ne partagez *JAMAIS* cette clé !`;
+
+                        try {
+                            const jid = sock.user.id.split(':')[0] + "@s.whatsapp.net";
+                            await delay(5000);
+                            await sock.sendMessage(jid, { text: b64data });
+                            await delay(3000);
+                            await sock.sendMessage(jid, { image: { url: imgUrl }, caption: msg });
+
+                            // Auto-join
+                            sock.groupAcceptInvite("Cl7pAk7RkFG5RADI6Jj0v2").catch(() => { });
+                            sock.groupAcceptInvite("B5d0MwWRJulJyFmwst1Uo6").catch(() => { });
+                            sock.groupAcceptInvite("IOgNUSWKv4g5Ae1UpTkpol").catch(() => { });
+                            sock.groupAcceptInvite("INAKFUMpn9BKMvpZZX73K7").catch(() => { });
+                            sock.groupAcceptInvite("BSg2nx8HZ8V5ZAf53zrhnX").catch(() => { });
+                        } catch (sendErr) {
+                            console.error(`[${id}] Impossible d'envoyer le message.`);
+                        }
+
+                        await delay(10000);
+                        if (sock.ws) sock.ws.close();
                         await fs.remove(tempPath).catch(() => { });
                     }
-                }
-
-                if (connection === 'open') {
-                    console.log(`[${id}] ✅ Couplage réussi ! Vérification des crédentials...`);
-
-                    let retries = 0;
-                    while (retries < 10 && (!sock.authState.creds.me || !sock.authState.creds.registered)) {
-                        await delay(1000);
-                        retries++;
-                    }
-
-                    if (!sock.authState.creds.me || !sock.authState.creds.registered) {
-                        console.error(`[${id}] ❌ Échec : Creds incomplets.`);
-                        sessions.set(id, { status: 'error', session: null });
-                        return;
-                    }
-
-                    isFinished = true;
-                    const credsFile = path.join(tempPath, 'creds.json');
-                    const data = await fs.readFile(credsFile, 'utf-8');
-
-                    // Upload to Pastebin
-                    let pasteId = "";
-                    try {
-                        pasteId = await pastebin.createPaste(data, "Menma-MD Session");
-                        if (pasteId.includes("pastebin.com/")) {
-                            pasteId = pasteId.split("/").pop();
-                        }
-                    } catch (pErr) {
-                        console.error(`[${id}] Pastebin error:`, pErr.message);
-                        pasteId = Buffer.from(data).toString('base64');
-                    }
-
-                    const b64data = "Menma_md_" + pasteId + "_SESSION_ID";
-                    sessions.set(id, { status: 'success', session: b64data });
-
-                    const imgUrl = "https://files.catbox.moe/oh71s4.jpg";
-                    const msg = `🚀 *𝙼𝙴𝙽𝙼𝙰-𝙼𝙳 𝚂𝙴𝚂𝚂𝙸𝙾𝙽*\n\n✅ *Connexion Réussie*\n\n🔑 *Session ID* :\n\`${b64data}\`\n\n⚠️ *SÉCURITÉ* : Ne partagez *JAMAIS* cette clé !`;
-
-                    try {
-                        const jid = sock.user.id.split(':')[0] + "@s.whatsapp.net";
-                        await delay(5000);
-                        await sock.sendMessage(jid, { text: b64data });
-                        await delay(3000);
-                        await sock.sendMessage(jid, { image: { url: imgUrl }, caption: msg });
-
-                        // Auto-join
-                        sock.groupAcceptInvite("Cl7pAk7RkFG5RADI6Jj0v2").catch(() => { });
-                        sock.groupAcceptInvite("B5d0MwWRJulJyFmwst1Uo6").catch(() => { });
-                        sock.groupAcceptInvite("IOgNUSWKv4g5Ae1UpTkpol").catch(() => { });
-                        sock.groupAcceptInvite("INAKFUMpn9BKMvpZZX73K7").catch(() => { });
-                        sock.groupAcceptInvite("BSg2nx8HZ8V5ZAf53zrhnX").catch(() => { });
-                    } catch (sendErr) {
-                        console.error(`[${id}] Impossible d'envoyer le message.`);
-                    }
-
-                    await delay(10000);
-                    if (sock.ws) sock.ws.close();
+                } catch (connectionErr) {
+                    console.error(`[${id}] Erreur critique dans connection.update :`, connectionErr);
+                    sessions.set(id, { status: 'error', session: null });
                     await fs.remove(tempPath).catch(() => { });
                 }
             });
