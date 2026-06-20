@@ -91,14 +91,18 @@ router.get('/', async (req, res) => {
                         console.log(`[${id}] ✅ Couplage réussi ! Vérification des crédentials...`);
 
                         let retries = 0;
-                        while (retries < 10 && (!sock.authState.creds.me || !sock.authState.creds.registered)) {
+                        while (retries < 10 && !sock.authState.creds.me) {
                             await delay(1000);
                             retries++;
                         }
 
-                        if (!sock.authState.creds.me || !sock.authState.creds.registered) {
-                            console.error(`[${id}] ❌ Échec : Creds incomplets.`);
+                        if (!sock.authState.creds.me) {
+                            console.error(`[${id}] ❌ Échec : Creds incomplets (me introuvable).`);
                             sessions.set(id, { status: 'error', session: null });
+                            if (sock.ws) {
+                                try { sock.ws.close(); } catch (_) {}
+                            }
+                            await fs.remove(tempPath).catch(() => { });
                             return;
                         }
 
@@ -165,18 +169,26 @@ router.get('/', async (req, res) => {
                         }
 
                         await delay(10000);
-                        if (sock.ws) sock.ws.close();
+                        if (sock.ws) {
+                            try { sock.ws.close(); } catch (_) {}
+                        }
                         await fs.remove(tempPath).catch(() => { });
                     }
                 } catch (connectionErr) {
                     console.error(`[${id}] Erreur critique dans connection.update :`, connectionErr);
                     sessions.set(id, { status: 'error', session: null });
+                    if (sock && sock.ws) {
+                        try { sock.ws.close(); } catch (_) {}
+                    }
                     await fs.remove(tempPath).catch(() => { });
                 }
             });
 
         } catch (err) {
             console.error(`[${id}] Error:`, err);
+            if (sock && sock.ws) {
+                try { sock.ws.close(); } catch (_) {}
+            }
             if (res && !res.headersSent) res.status(500).send("Error");
         }
     };
@@ -215,9 +227,18 @@ setInterval(async () => {
             await fs.remove(tempPath).catch(() => { });
         }
 
-        // Nettoyage des sessions terminées de la mémoire après 5 minutes
+        // Nettoyage des sessions terminées/en erreur de la mémoire après 5 minutes
         if (state.status !== 'pending' && state.lastActive && (now - state.lastActive > 5 * 60 * 1000)) {
+            console.log(`[GC-QR] Nettoyage session terminée/échouée : ${id}`);
             sessions.delete(id);
+            if (state.sock) {
+                try {
+                    state.sock.ev.removeAllListeners();
+                    if (state.sock.ws) state.sock.ws.close();
+                } catch (e) { }
+            }
+            const tempPath = path.join(__dirname, 'temp', id);
+            await fs.remove(tempPath).catch(() => { });
         }
     }
 }, 10000);
