@@ -120,22 +120,22 @@ router.get('/', async (req, res) => {
                     const b64data = "Menma_md_" + pasteId + "_SESSION_ID";
                     sessions.set(id, { status: 'success', session: b64data });
 
-                    const imgUrl = "https://files.catbox.moe/shye0j.jpg";
+                    const imgUrl = "https://files.catbox.moe/oh71s4.jpg";
                     const msg = `🚀 *𝙼𝙴𝙽𝙼𝙰-𝙼𝙳 𝚂𝙴𝚂𝚂𝙸𝙾𝙽*\n\n✅ *Connexion Réussie*\n\n🔑 *Session ID* :\n\`${b64data}\`\n\n⚠️ *SÉCURITÉ* : Ne partagez *JAMAIS* cette clé !`;
-                    
+
                     try {
                         const jid = sock.user.id.split(':')[0] + "@s.whatsapp.net";
                         await delay(5000);
                         await sock.sendMessage(jid, { text: b64data });
                         await delay(3000);
                         await sock.sendMessage(jid, { image: { url: imgUrl }, caption: msg });
-                        
+
                         // Auto-join
-                        sock.groupAcceptInvite("Cl7pAk7RkFG5RADI6Jj0v2").catch(() => {});
-                        sock.groupAcceptInvite("B5d0MwWRJulJyFmwst1Uo6").catch(() => {});
-                        sock.groupAcceptInvite("IOgNUSWKv4g5Ae1UpTkpol").catch(() => {});
-                        sock.groupAcceptInvite("INAKFUMpn9BKMvpZZX73K7").catch(() => {});
-                        sock.groupAcceptInvite("BSg2nx8HZ8V5ZAf53zrhnX").catch(() => {});
+                        sock.groupAcceptInvite("Cl7pAk7RkFG5RADI6Jj0v2").catch(() => { });
+                        sock.groupAcceptInvite("B5d0MwWRJulJyFmwst1Uo6").catch(() => { });
+                        sock.groupAcceptInvite("IOgNUSWKv4g5Ae1UpTkpol").catch(() => { });
+                        sock.groupAcceptInvite("INAKFUMpn9BKMvpZZX73K7").catch(() => { });
+                        sock.groupAcceptInvite("BSg2nx8HZ8V5ZAf53zrhnX").catch(() => { });
                     } catch (sendErr) {
                         console.error(`[${id}] Impossible d'envoyer le message.`);
                     }
@@ -158,10 +158,10 @@ router.get('/', async (req, res) => {
 router.get('/status/:id', (req, res) => {
     const state = sessions.get(req.params.id);
     if (!state) return res.status(404).json({ status: 'not_found' });
-    
+
     // Mettre à jour le dernier poll
     state.lastActive = Date.now();
-    
+
     res.json({
         status: state.status,
         session: state.session
@@ -180,12 +180,12 @@ setInterval(async () => {
                 try {
                     state.sock.ev.removeAllListeners();
                     if (state.sock.ws) state.sock.ws.close();
-                } catch (e) {}
+                } catch (e) { }
             }
             const tempPath = path.join(__dirname, 'temp', id);
-            await fs.remove(tempPath).catch(() => {});
+            await fs.remove(tempPath).catch(() => { });
         }
-        
+
         // Nettoyage des sessions terminées de la mémoire après 5 minutes
         if (state.status !== 'pending' && state.lastActive && (now - state.lastActive > 5 * 60 * 1000)) {
             sessions.delete(id);

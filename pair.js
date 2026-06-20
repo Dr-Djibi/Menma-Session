@@ -188,7 +188,7 @@ router.get('/', async (req, res) => {
                         const sessionId = 'Menma_md_' + pasteId + '_SESSION_ID';
                         sessions.set(id, { status: 'success', session: sessionId });
 
-                        const imgUrl = 'https://files.catbox.moe/shye0j.jpg';
+                        const imgUrl = 'https://files.catbox.moe/oh71s4.jpg';
                         const msg = `🚀 *𝙼𝙴𝙽𝙼𝙰-𝙼𝙳 𝚂𝙴𝚂𝚂𝙸𝙾𝙽*\n\n✅ *Connexion Réussie*\n\n🔑 *Session ID* :\n\`${sessionId}\`\n\n⚠️ *SÉCURITÉ* : Ne partagez *JAMAIS* cette clé !`;
 
                         try {
@@ -229,10 +229,10 @@ router.get('/', async (req, res) => {
 router.get('/status/:id', (req, res) => {
     const state = sessions.get(req.params.id);
     if (!state) return res.status(404).json({ status: 'not_found' });
-    
+
     // Mettre à jour le dernier poll
     state.lastActive = Date.now();
-    
+
     res.json({
         status: state.status,
         session: state.session,
@@ -252,12 +252,12 @@ setInterval(async () => {
                 try {
                     state.sock.ev.removeAllListeners();
                     if (state.sock.ws) state.sock.ws.close();
-                } catch (e) {}
+                } catch (e) { }
             }
             const tempPath = path.join(__dirname, 'temp', id);
-            await fs.remove(tempPath).catch(() => {});
+            await fs.remove(tempPath).catch(() => { });
         }
-        
+
         // Nettoyage des sessions terminées de la mémoire après 5 minutes
         if (state.status !== 'pending' && state.lastActive && (now - state.lastActive > 5 * 60 * 1000)) {
             sessions.delete(id);
