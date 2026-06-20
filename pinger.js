@@ -3,6 +3,10 @@
  * Le site session-web est le seul qui ping les bots.
  * Chaque bot enregistre son URL dans Supabase via supabaseTelemetry.
  * Ce service interroge la base, ping chaque URL /health et met à jour is_online.
+ *
+ * Gestion des sessions obsolètes :
+ *  - Si /health renvoie un sessionId différent de celui en DB → ancienne session marquée HORS LIGNE
+ *  - Le bot_url est transféré vers la nouvelle session si elle est déjà enregistrée
  */
 
 const axios  = require('axios');
@@ -42,10 +46,22 @@ async function pingAllBots() {
                 const url = bot.bot_url.replace(/\/$/, '') + '/health';
                 try {
                     const resp = await axios.get(url, { timeout: PING_TIMEOUT_MS });
-                    const online = resp.status === 200 && resp.data?.status === 'online';
-                    return { session_id: bot.session_id, online, uptime: resp.data?.uptime ?? null };
+
+                    if (resp.status !== 200 || resp.data?.status !== 'online') {
+                        return { session_id: bot.session_id, bot_url: bot.bot_url, online: false, uptime: null, realSessionId: null };
+                    }
+
+                    const realSessionId = resp.data?.sessionId || null;
+
+                    // Si le bot renvoie un sessionId ET qu'il ne correspond pas → session fantôme
+                    if (realSessionId && realSessionId !== bot.session_id) {
+                        console.log(`[PINGER] ⚠️  Session obsolète détectée : DB="${bot.session_id.slice(0,18)}..." Réel="${realSessionId.slice(0,18)}..."`);
+                        return { session_id: bot.session_id, bot_url: bot.bot_url, online: false, uptime: null, realSessionId };
+                    }
+
+                    return { session_id: bot.session_id, bot_url: bot.bot_url, online: true, uptime: resp.data?.uptime ?? null, realSessionId };
                 } catch {
-                    return { session_id: bot.session_id, online: false, uptime: null };
+                    return { session_id: bot.session_id, bot_url: bot.bot_url, online: false, uptime: null, realSessionId: null };
                 }
             })
         );
@@ -53,7 +69,33 @@ async function pingAllBots() {
         // Mettre à jour en DB
         for (const result of results) {
             if (result.status !== 'fulfilled') continue;
-            const { session_id, online, uptime } = result.value;
+            const { session_id, bot_url, online, uptime, realSessionId } = result.value;
+
+            // ── Gestion des sessions fantômes (sessionId changé après reconnexion) ──
+            if (!online && realSessionId && realSessionId !== session_id) {
+                // Passer l'ancienne session hors ligne
+                await client.query(
+                    `UPDATE active_bots SET is_online = FALSE WHERE session_id = $1`, [session_id]
+                ).catch(() => {});
+
+                // Si la nouvelle session est déjà en DB, lui transférer le bot_url
+                const { rowCount } = await client.query(
+                    `UPDATE active_bots
+                     SET bot_url = $1, is_online = TRUE, last_active = CURRENT_TIMESTAMP
+                     WHERE session_id = $2`,
+                    [bot_url, realSessionId]
+                ).catch(() => ({ rowCount: 0 }));
+
+                if (rowCount > 0) {
+                    console.log(`[PINGER] 🔄 bot_url transféré → nouvelle session "${realSessionId.slice(0,18)}..."`);
+                } else {
+                    console.log(`[PINGER] ℹ️  Nouvelle session "${realSessionId.slice(0,18)}..." pas encore en DB — elle s'enregistrera d'elle-même.`);
+                }
+
+                console.log(`[PINGER] ❌ ${session_id.slice(0, 18)}... → HORS LIGNE (session obsolète)`);
+                continue;
+            }
+            // ─────────────────────────────────────────────────────────────────────
 
             await client.query(
                 `UPDATE active_bots

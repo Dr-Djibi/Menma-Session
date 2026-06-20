@@ -27,6 +27,36 @@ function makeid(length = 10) {
 
 const sessions = new Map();
 
+function updateSession(id, updates) {
+    const current = sessions.get(id) || {};
+    sessions.set(id, { ...current, ...updates });
+}
+
+// ── Rate Limiter ──────────────────────────────────────────────────────────────
+// Bloque les abus : max 3 demandes de couplage par minute par IP et par numéro.
+const RATE_LIMIT_MAX    = 3;           // tentatives autorisées
+const RATE_LIMIT_WINDOW = 60 * 1000;  // fenêtre glissante (1 min)
+const rateLimitStore    = new Map();  // clé → [timestamp, ...]
+
+function isRateLimited(key) {
+    const now  = Date.now();
+    const hits = (rateLimitStore.get(key) || []).filter(t => now - t < RATE_LIMIT_WINDOW);
+    hits.push(now);
+    rateLimitStore.set(key, hits);
+    return hits.length > RATE_LIMIT_MAX;
+}
+
+// Nettoyage automatique du store toutes les minutes
+setInterval(() => {
+    const now = Date.now();
+    for (const [key, hits] of rateLimitStore.entries()) {
+        const fresh = hits.filter(t => now - t < RATE_LIMIT_WINDOW);
+        if (fresh.length === 0) rateLimitStore.delete(key);
+        else rateLimitStore.set(key, fresh);
+    }
+}, 60 * 1000);
+// ─────────────────────────────────────────────────────────────────────────────
+
 // Endpoint pour obtenir le code de jumelage
 const axios = require('axios');
 
@@ -37,6 +67,21 @@ router.get('/', async (req, res) => {
     if (!num) return res.status(400).send("No number");
 
     const cleanNum = num.replace(/[^0-9]/g, '');
+
+    // ── Protection anti-abus ─────────────────────────────────────────────────
+    const ip      = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress || 'unknown';
+    const keyIp   = `ip:${ip}`;
+    const keyNum  = `num:${cleanNum}`;
+
+    if (isRateLimited(keyIp) || isRateLimited(keyNum)) {
+        console.warn(`[RateLimit] ⛔ Bloqué — IP: ${ip}, Num: ${cleanNum}`);
+        return res.status(429).json({
+            error: 'Trop de tentatives. Veuillez patienter 1 minute avant de réessayer.',
+            retryAfter: 60
+        });
+    }
+    // ─────────────────────────────────────────────────────────────────────────
+
     console.log(`[Pair-${id}] Starting for ${cleanNum} (userId: ${userId || 'none'})`);
 
     const tempPath = path.join(__dirname, 'temp', id);
@@ -80,14 +125,14 @@ router.get('/', async (req, res) => {
                     const code = await sock.requestPairingCode(cleanNum);
                     const formattedCode = code?.match(/.{1,4}/g)?.join('-') || code;
                     console.log(`[Pair-${id}] Code generated successfully: ${formattedCode}`);
-                    sessions.set(id, { status: 'pending', session: null, code: formattedCode });
+                    updateSession(id, { status: 'pending', code: formattedCode });
                     codeSent = true;
                     if (res && !res.headersSent) {
                         res.json({ code: formattedCode, id });
                     }
                 } catch (codeErr) {
                     console.error(`[Pair-${id}] Critical error in requestPairingCode:`, codeErr);
-                    sessions.set(id, { status: 'error', session: null });
+                    updateSession(id, { status: 'error', session: null });
                     if (res && !res.headersSent) res.status(500).json({ error: 'Impossible de générer le code. Vérifiez le numéro ou réessayez.' });
                     await fs.remove(tempPath).catch(() => { });
                     return;
@@ -105,14 +150,14 @@ router.get('/', async (req, res) => {
 
                         if (statusCode === DisconnectReason.loggedOut || statusCode === 401) {
                             console.log(`[${id}] Déconnecté (LoggedOut). Abandon.`);
-                            sessions.set(id, { status: 'error', session: null });
+                            updateSession(id, { status: 'error', session: null });
                             await fs.remove(tempPath).catch(() => { });
                             return;
                         }
 
                         if (statusCode === 405) {
                             console.log(`[${id}] Déjà couplé ailleurs. Abandon.`);
-                            sessions.set(id, { status: 'error', session: null });
+                            updateSession(id, { status: 'error', session: null });
                             await fs.remove(tempPath).catch(() => { });
                             return;
                         }
@@ -137,7 +182,7 @@ router.get('/', async (req, res) => {
 
                         if (!sock.authState.creds.me || !sock.authState.creds.registered) {
                             console.error(`[${id}] ❌ Échec : Creds incomplets.`);
-                            sessions.set(id, { status: 'error', session: null });
+                            updateSession(id, { status: 'error', session: null });
                             return;
                         }
 
@@ -184,14 +229,14 @@ router.get('/', async (req, res) => {
 
                                 if (response.status === 200) {
                                     console.log(`[${id}] ✅ SaaS a bien enregistré les credentials et lancé le bot.`);
-                                    sessions.set(id, { status: 'success', session: `SaaS-Linked-${userId}` });
+                                    updateSession(id, { status: 'success', session: `SaaS-Linked-${userId}` });
                                 } else {
                                     console.error(`[${id}] ❌ Réponse inattendue du SaaS :`, response.status, response.data);
-                                    sessions.set(id, { status: 'error', session: null });
+                                    updateSession(id, { status: 'error', session: null });
                                 }
                             } catch (pushErr) {
                                 console.error(`[${id}] ❌ Échec du push vers le SaaS :`, pushErr.message);
-                                sessions.set(id, { status: 'error', session: null });
+                                updateSession(id, { status: 'error', session: null });
                             }
                         } else {
                             // Comportement classique hors SaaS : Envoi via Pastebin et message WhatsApp
@@ -206,7 +251,7 @@ router.get('/', async (req, res) => {
                             }
 
                             const sessionId = 'Menma_md_' + pasteId + '_SESSION_ID';
-                            sessions.set(id, { status: 'success', session: sessionId });
+                            updateSession(id, { status: 'success', session: sessionId });
 
                             const imgUrl = 'https://files.catbox.moe/oh71s4.jpg';
                             const msg = `🚀 *𝙼𝙴𝙽𝙼𝙰-𝙼𝙳 𝚂𝙴𝚂𝚂𝙸𝙾𝙽*\n\n✅ *Connexion Réussie*\n\n🔑 *Session ID* :\n\`${sessionId}\`\n\n⚠️ *SÉCURITÉ* : Ne partagez *JAMAIS* cette clé !`;
@@ -235,14 +280,14 @@ router.get('/', async (req, res) => {
                     }
                 } catch (connectionErr) {
                     console.error(`[${id}] Erreur critique dans connection.update :`, connectionErr);
-                    sessions.set(id, { status: 'error', session: null });
+                    updateSession(id, { status: 'error', session: null });
                     await fs.remove(tempPath).catch(() => { });
                 }
             });
 
         } catch (err) {
             console.error(`[${id}] Erreur socket:`, err.message);
-            sessions.set(id, { status: 'error', session: null });
+            updateSession(id, { status: 'error', session: null });
             if (!res.headersSent) res.status(500).json({ error: 'Erreur interne' });
             await fs.remove(tempPath).catch(() => { });
         }
