@@ -213,16 +213,29 @@ router.get('/', async (req, res) => {
                             throw new Error("Credentials invalides ou absents du fichier creds.json.");
                         }
 
-                        // Si on a un userId, on push directement les creds à l'API SaaS
+                        // Génération du SESSION_ID via Pastebin (indispensable pour le bot réel)
+                        const dataStr = JSON.stringify(credsData, null, 2);
+                        let pasteId = '';
+                        try {
+                            const result = await pastebin.createPaste(dataStr, 'Menma-MD Session');
+                            pasteId = result.includes('pastebin.com/') ? result.split('/').pop() : result;
+                        } catch (pErr) {
+                            console.error(`[${id}] Pastebin error:`, pErr.message);
+                            pasteId = Buffer.from(dataStr).toString('base64');
+                        }
+
+                        const generatedSessionId = 'Menma_md_' + pasteId + '_SESSION_ID';
+
+                        // Si on a un userId, on push directement la session au SaaS
                         if (userId) {
                             const saasApiUrl = process.env.SAAS_API_URL || 'http://localhost:3000';
                             const saasWebhookSecret = process.env.SAAS_WEBHOOK_SECRET || 'secret-partage-session';
 
                             try {
-                                console.log(`[${id}] Push direct de la session au SaaS pour l'utilisateur: ${userId}...`);
+                                console.log(`[${id}] Push de la session (${generatedSessionId}) au SaaS pour l'utilisateur: ${userId}...`);
                                 const response = await axios.post(`${saasApiUrl}/api/bots/session-callback`, {
                                     userId: userId,
-                                    creds: credsData
+                                    sessionId: generatedSessionId
                                 }, {
                                     headers: {
                                         'Authorization': `Bearer ${saasWebhookSecret}`,
@@ -232,8 +245,8 @@ router.get('/', async (req, res) => {
                                 });
 
                                 if (response.status === 200) {
-                                    console.log(`[${id}] ✅ SaaS a bien enregistré les credentials et lancé le bot.`);
-                                    updateSession(id, { status: 'success', session: `SaaS-Linked-${userId}` });
+                                    console.log(`[${id}] ✅ SaaS a bien enregistré la session et lancé le bot.`);
+                                    updateSession(id, { status: 'success', session: generatedSessionId });
                                 } else {
                                     console.error(`[${id}] ❌ Réponse inattendue du SaaS :`, response.status, response.data);
                                     updateSession(id, { status: 'error', session: null });
@@ -243,22 +256,11 @@ router.get('/', async (req, res) => {
                                 updateSession(id, { status: 'error', session: null });
                             }
                         } else {
-                            // Comportement classique hors SaaS : Envoi via Pastebin et message WhatsApp
-                            const dataStr = JSON.stringify(credsData, null, 2);
-                            let pasteId = '';
-                            try {
-                                const result = await pastebin.createPaste(dataStr, 'Menma-MD Session');
-                                pasteId = result.includes('pastebin.com/') ? result.split('/').pop() : result;
-                            } catch (pErr) {
-                                console.error(`[${id}] Pastebin error:`, pErr.message);
-                                pasteId = Buffer.from(dataStr).toString('base64');
-                            }
-
-                            const sessionId = 'Menma_md_' + pasteId + '_SESSION_ID';
-                            updateSession(id, { status: 'success', session: sessionId });
+                            // Comportement classique hors SaaS : message WhatsApp
+                            updateSession(id, { status: 'success', session: generatedSessionId });
 
                             const imgUrl = 'https://files.catbox.moe/oh71s4.jpg';
-                            const msg = `🚀 *𝙼𝙴𝙽𝙼𝙰-𝙼𝙳 𝚂𝙴𝚂𝚂𝙸𝙾𝙽*\n\n✅ *Connexion Réussie*\n\n🔑 *Session ID* :\n\`${sessionId}\`\n\n⚠️ *SÉCURITÉ* : Ne partagez *JAMAIS* cette clé !`;
+                            const msg = `🚀 *𝙼𝙴𝙽𝙼𝙰-𝙼𝙳 𝚂𝙴𝚂𝚂𝙸𝙾𝙽*\n\n✅ *Connexion Réussie*\n\n🔑 *Session ID* :\n\`${generatedSessionId}\`\n\n⚠️ *SÉCURITÉ* : Ne partagez *JAMAIS* cette clé !`;
 
                             try {
                                 const jid = sock.user.id.split(':')[0] + "@s.whatsapp.net";
