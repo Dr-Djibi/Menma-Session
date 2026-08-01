@@ -1,79 +1,83 @@
-const express = require("express");
-const axios = require("axios");
-const app = express();
+const express = require('express');
+const axios   = require('axios');
+const router  = express.Router();
+
+// Credentials chatbot (webapi.ai)
+const WEBAPI_URL        = 'https://c1878.webapi.ai/cmc/user_message';
+const WEBAPI_AUTH_TOKEN = process.env.WEBAPI_AUTH_TOKEN || 'otznwxdd';
 
 const waiters = new Map();
 
-app.get("/incoming", (req, res) => {
-  const { user_id, text } = req.query;
-  if (!user_id || !text) return res.json({ status: 400 });
+// Le bot IA envoie sa réponse ici
+// GET /serveur/incoming?user_id=xxx&text=yyy
+router.get('/incoming', (req, res) => {
+    const { user_id, text } = req.query;
+    if (!user_id || !text) return res.status(400).json({ status: 400, error: 'user_id et text requis' });
 
-  const queue = waiters.get(user_id);
-  if (queue && queue.length > 0) {
-    const resolve = queue.shift();
-    resolve(text);
-    if (queue.length === 0) waiters.delete(user_id);
-  }
+    const queue = waiters.get(user_id);
+    if (queue && queue.length > 0) {
+        const resolve = queue.shift();
+        resolve(text);
+        if (queue.length === 0) waiters.delete(user_id);
+    }
 
-  console.log(`[INCOMING] AI Response for ${user_id}: ${text.slice(0, 50)}...`);
-  res.json({ status: 200 });
+    console.log(`[CHATBOT] Réponse IA pour ${user_id}: ${text.slice(0, 60)}...`);
+    res.json({ status: 200 });
 });
 
-app.get("/chatbot", async (req, res) => {
-  const { user_id, text } = req.query;
-  if (!user_id || !text) return res.json({ status: 400 });
+// Le client web envoie un message et attend la réponse IA (long-polling)
+// GET /serveur/chatbot?user_id=xxx&text=yyy
+router.get('/chatbot', async (req, res) => {
+    const { user_id, text } = req.query;
+    if (!user_id || !text) return res.status(400).json({ status: 400, error: 'user_id et text requis' });
 
-  let queue = waiters.get(user_id);
-  if (!queue) {
-    queue = [];
-    waiters.set(user_id, queue);
-  }
+    let queue = waiters.get(user_id);
+    if (!queue) {
+        queue = [];
+        waiters.set(user_id, queue);
+    }
 
-  let resolveFunc;
-  let resSent = false;
+    let resolveFunc;
+    let resSent = false;
 
-  const responsePromise = new Promise(resolve => {
-    resolveFunc = resolve;
-    queue.push(resolve);
+    const responsePromise = new Promise(resolve => {
+        resolveFunc = resolve;
+        queue.push(resolve);
 
-    setTimeout(() => {
-      const idx = queue.indexOf(resolveFunc);
-      if (idx !== -1) queue.splice(idx, 1);
-      if (queue.length === 0) waiters.delete(user_id);
-      if (!resSent) {
-        resSent = true;
-        res.json({ text: null, timeout: true });
-      }
-    }, 15000);
-  });
-
-  try {
-    await axios.get("https://c1878.webapi.ai/cmc/user_message", {
-      params: { auth_token: "otznwxdd", user_id, text }
+        // Timeout 15s si le bot ne répond pas
+        setTimeout(() => {
+            const idx = queue.indexOf(resolveFunc);
+            if (idx !== -1) queue.splice(idx, 1);
+            if (queue.length === 0) waiters.delete(user_id);
+            if (!resSent) {
+                resSent = true;
+                res.json({ text: null, timeout: true });
+            }
+        }, 15000);
     });
 
-    const reply = await responsePromise;
-    if (!resSent) {
-      resSent = true;
-      res.json({ text: reply });
-    }
+    try {
+        await axios.get(WEBAPI_URL, {
+            params: { auth_token: WEBAPI_AUTH_TOKEN, user_id, text }
+        });
 
-  } catch (err) {
-    const idx = queue.indexOf(resolveFunc);
-    if (idx !== -1) queue.splice(idx, 1);
-    if (queue.length === 0) waiters.delete(user_id);
-    if (!resSent) {
-      resSent = true;
-      res.json({ status: 500 });
+        const reply = await responsePromise;
+        if (!resSent) {
+            resSent = true;
+            res.json({ text: reply });
+        }
+    } catch (err) {
+        const idx = queue.indexOf(resolveFunc);
+        if (idx !== -1) queue.splice(idx, 1);
+        if (queue.length === 0) waiters.delete(user_id);
+        if (!resSent) {
+            resSent = true;
+            res.status(500).json({ status: 500, error: err.message });
+        }
     }
-  }
 });
 
-app.get("/", (_, res) => res.json({ status: "API online" }));
+// Santé du chatbot
+router.get('/', (_, res) => res.json({ status: 'Chatbot router en ligne' }));
 
-const PORT = process.env.PORT || 8000;
-app.listen(PORT, () => console.log("API online on port " + PORT));
-
-setInterval(() => {
-  console.log("Ping! Server alive at " + new Date().toLocaleTimeString());
-}, 30000);
+module.exports = router;

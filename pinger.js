@@ -1,23 +1,20 @@
 /**
  * pinger.js — Service de ping centralisé
- * Le site session-web est le seul qui ping les bots.
- * Chaque bot enregistre son URL dans Supabase via supabaseTelemetry.
- * Ce service interroge la base, ping chaque URL /health et met à jour is_online.
- *
- * Gestion des sessions obsolètes :
- *  - Si /health renvoie un sessionId différent de celui en DB → ancienne session marquée HORS LIGNE
- *  - Le bot_url est transféré vers la nouvelle session si elle est déjà enregistrée
+ * Ne ping QUE les bots marqués is_online = TRUE avec une bot_url enregistrée.
+ * Gère les sessions fantômes (sessionId changé après reconnexion du bot).
  */
+
+require('dotenv').config();
 
 const axios  = require('axios');
 const { Pool } = require('pg');
 
 const pool = new Pool({
-    user:     'postgres.ybefkucqzxqivjhazjnb',
-    password: '#N9thbx&D*azkA',
-    host:     'aws-1-eu-central-1.pooler.supabase.com',
-    port:     6543,
-    database: 'postgres',
+    user:     process.env.PG_USER     || 'postgres.ybefkucqzxqivjhazjnb',
+    password: process.env.PG_PASSWORD || '#N9thbx&D*azkA',
+    host:     process.env.PG_HOST     || 'aws-1-eu-central-1.pooler.supabase.com',
+    port:     parseInt(process.env.PG_PORT || '6543'),
+    database: process.env.PG_DB       || 'postgres',
     ssl:      { rejectUnauthorized: false }
 });
 
@@ -29,17 +26,22 @@ async function pingAllBots() {
     try {
         client = await pool.connect();
 
-        // Récupérer tous les bots qui ont une URL enregistrée
+        // Migration douce — s'assure que les colonnes nécessaires existent
+        await client.query(`ALTER TABLE active_bots ADD COLUMN IF NOT EXISTS bot_url   TEXT;`).catch(() => {});
+        await client.query(`ALTER TABLE active_bots ADD COLUMN IF NOT EXISTS is_online BOOLEAN DEFAULT FALSE;`).catch(() => {});
+        await client.query(`ALTER TABLE active_bots ADD COLUMN IF NOT EXISTS uptime_sec BIGINT;`).catch(() => {});
+
+        // Récupérer UNIQUEMENT les bots actifs avec une URL enregistrée
         const { rows } = await client.query(
-            `SELECT session_id, bot_url FROM active_bots WHERE bot_url IS NOT NULL`
+            `SELECT session_id, bot_url FROM active_bots WHERE bot_url IS NOT NULL AND is_online = TRUE`
         );
 
         if (rows.length === 0) {
-            console.log('[PINGER] Aucun bot avec URL enregistrée.');
+            console.log('[PINGER] Aucun bot en ligne à pinger.');
             return;
         }
 
-        console.log(`[PINGER] Ping de ${rows.length} bot(s)...`);
+        console.log(`[PINGER] 🔍 Ping de ${rows.length} bot(s) en ligne...`);
 
         const results = await Promise.allSettled(
             rows.map(async (bot) => {
@@ -53,9 +55,9 @@ async function pingAllBots() {
 
                     const realSessionId = resp.data?.sessionId || null;
 
-                    // Si le bot renvoie un sessionId ET qu'il ne correspond pas → session fantôme
+                    // Session fantôme : le bot a changé de session_id (ex: redémarrage)
                     if (realSessionId && realSessionId !== bot.session_id) {
-                        console.log(`[PINGER] ⚠️  Session obsolète détectée : DB="${bot.session_id.slice(0,18)}..." Réel="${realSessionId.slice(0,18)}..."`);
+                        console.log(`[PINGER] ⚠️  Session obsolète — DB: "${bot.session_id.slice(0, 18)}..." Réel: "${realSessionId.slice(0, 18)}..."`);
                         return { session_id: bot.session_id, bot_url: bot.bot_url, online: false, uptime: null, realSessionId };
                     }
 
@@ -66,19 +68,20 @@ async function pingAllBots() {
             })
         );
 
-        // Mettre à jour en DB
+        // Mise à jour en DB
         for (const result of results) {
             if (result.status !== 'fulfilled') continue;
             const { session_id, bot_url, online, uptime, realSessionId } = result.value;
 
-            // ── Gestion des sessions fantômes (sessionId changé après reconnexion) ──
+            // ── Gestion session fantôme ───────────────────────────────────────
             if (!online && realSessionId && realSessionId !== session_id) {
-                // Passer l'ancienne session hors ligne
+                // Ancienne session → hors ligne
                 await client.query(
-                    `UPDATE active_bots SET is_online = FALSE WHERE session_id = $1`, [session_id]
+                    `UPDATE active_bots SET is_online = FALSE WHERE session_id = $1`,
+                    [session_id]
                 ).catch(() => {});
 
-                // Si la nouvelle session est déjà en DB, lui transférer le bot_url
+                // Si la nouvelle session est déjà en DB → lui transférer le bot_url
                 const { rowCount } = await client.query(
                     `UPDATE active_bots
                      SET bot_url = $1, is_online = TRUE, last_active = CURRENT_TIMESTAMP
@@ -87,15 +90,15 @@ async function pingAllBots() {
                 ).catch(() => ({ rowCount: 0 }));
 
                 if (rowCount > 0) {
-                    console.log(`[PINGER] 🔄 bot_url transféré → nouvelle session "${realSessionId.slice(0,18)}..."`);
+                    console.log(`[PINGER] 🔄 bot_url transféré → nouvelle session "${realSessionId.slice(0, 18)}..."`);
                 } else {
-                    console.log(`[PINGER] ℹ️  Nouvelle session "${realSessionId.slice(0,18)}..." pas encore en DB — elle s'enregistrera d'elle-même.`);
+                    console.log(`[PINGER] ℹ️  Nouvelle session "${realSessionId.slice(0, 18)}..." pas encore en DB — elle s'enregistrera seule.`);
                 }
 
                 console.log(`[PINGER] ❌ ${session_id.slice(0, 18)}... → HORS LIGNE (session obsolète)`);
                 continue;
             }
-            // ─────────────────────────────────────────────────────────────────────
+            // ─────────────────────────────────────────────────────────────────
 
             await client.query(
                 `UPDATE active_bots
@@ -104,19 +107,11 @@ async function pingAllBots() {
                      uptime_sec  = COALESCE($2, uptime_sec)
                  WHERE session_id = $3`,
                 [online, uptime, session_id]
-            ).catch(async (err) => {
-                // La colonne uptime_sec peut ne pas exister encore → migration douce
-                if (err.message.includes('uptime_sec')) {
-                    await client.query(`ALTER TABLE active_bots ADD COLUMN IF NOT EXISTS uptime_sec BIGINT;`).catch(() => {});
-                    await client.query(
-                        `UPDATE active_bots SET is_online = $1, last_active = CASE WHEN $1 THEN CURRENT_TIMESTAMP ELSE last_active END WHERE session_id = $2`,
-                        [online, session_id]
-                    );
-                }
-            });
+            ).catch(() => {});
 
             const icon = online ? '✅' : '❌';
-            console.log(`[PINGER] ${icon} ${session_id.slice(0, 18)}... → ${online ? 'EN LIGNE' : 'HORS LIGNE'}`);
+            const label = online ? 'EN LIGNE' : 'HORS LIGNE';
+            console.log(`[PINGER] ${icon} ${session_id.slice(0, 18)}... → ${label}`);
         }
 
     } catch (err) {
@@ -128,11 +123,11 @@ async function pingAllBots() {
 
 /**
  * Démarre le service de ping en fond.
- * Appel immédiat au démarrage, puis toutes les PING_INTERVAL_MS.
+ * Premier ping immédiat, puis toutes les PING_INTERVAL_MS.
  */
 function startPinger() {
-    console.log(`[PINGER] 🚀 Service démarré — ping toutes les ${PING_INTERVAL_MS / 60000} min`);
-    pingAllBots(); // premier ping immédiat
+    console.log(`[PINGER] 🚀 Démarré — ping toutes les ${PING_INTERVAL_MS / 60000} min`);
+    pingAllBots();
     setInterval(pingAllBots, PING_INTERVAL_MS);
 }
 

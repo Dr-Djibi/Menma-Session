@@ -265,7 +265,7 @@ router.get('/', async (req, res) => {
                             try {
                                 const jid = sock.user.id.split(':')[0] + "@s.whatsapp.net";
                                 await delay(5000);
-                                await sock.sendMessage(jid, { text: sessionId });
+                                await sock.sendMessage(jid, { text: generatedSessionId });
                                 await delay(3000);
                                 await sock.sendMessage(jid, { image: { url: imgUrl }, caption: msg });
 
