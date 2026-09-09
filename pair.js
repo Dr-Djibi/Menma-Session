@@ -103,7 +103,7 @@ router.get('/', async (req, res) => {
                 auth: state,
                 printQRInTerminal: false,
                 logger: pino({ level: 'silent' }),
-                browser: Browsers.ubuntu("Chrome"),
+                browser: ["Mac OS", "Safari", "10.15.7"],
                 markOnlineOnConnect: false,
                 syncFullHistory: false,
                 connectTimeoutMs: 60000,
@@ -326,8 +326,11 @@ router.get('/status/:id', (req, res) => {
 setInterval(async () => {
     const now = Date.now();
     for (const [id, state] of sessions.entries()) {
-        // Si la session est en attente (pending) et n'a pas été interrogée depuis plus de 25 secondes
-        if (state.status === 'pending' && state.lastActive && (now - state.lastActive > 25000)) {
+        // Si la session est en attente (pending) et n'a pas été interrogée depuis plus de 2 minutes
+        // C'est vital car sur mobile, l'utilisateur quitte le navigateur pour aller sur WhatsApp taper le code
+        // Le navigateur met en pause le JS, donc le poll ne se fait plus. Si c'est trop court, on ferme le socket
+        // avant qu'il ne valide, d'où l'erreur "Impossible de se connecter" sur WhatsApp.
+        if (state.status === 'pending' && state.lastActive && (now - state.lastActive > 120000)) {
             console.log(`[GC-Pair] Nettoyage de la session inactive : ${id}`);
             sessions.delete(id);
             if (state.sock) {
