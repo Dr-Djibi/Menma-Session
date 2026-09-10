@@ -117,27 +117,7 @@ router.get('/', async (req, res) => {
 
             sock.ev.on('creds.update', saveCreds);
 
-            // Demander le code de jumelage si pas encore enregistré
-            if (!sock.authState.creds.registered) {
-                await delay(3000);
-                try {
-                    console.log(`[Pair-${id}] Requesting code for: ${cleanNum}`);
-                    const code = await sock.requestPairingCode(cleanNum);
-                    const formattedCode = code?.match(/.{1,4}/g)?.join('-') || code;
-                    console.log(`[Pair-${id}] Code generated successfully: ${formattedCode}`);
-                    updateSession(id, { status: 'pending', code: formattedCode });
-                    codeSent = true;
-                    if (res && !res.headersSent) {
-                        res.json({ code: formattedCode, id });
-                    }
-                } catch (codeErr) {
-                    console.error(`[Pair-${id}] Critical error in requestPairingCode:`, codeErr);
-                    updateSession(id, { status: 'error', session: null });
-                    if (res && !res.headersSent) res.status(500).json({ error: 'Impossible de générer le code. Vérifiez le numéro ou réessayez.' });
-                    await fs.remove(tempPath).catch(() => { });
-                    return;
-                }
-            }
+            // Code generation moved after connection.update listener registration
 
             sock.ev.on('connection.update', async (update) => {
                 try {
@@ -293,6 +273,27 @@ router.get('/', async (req, res) => {
                     await fs.remove(tempPath).catch(() => { });
                 }
             });
+
+            if (!sock.authState.creds.registered) {
+                setTimeout(async () => {
+                    try {
+                        console.log(`[Pair-${id}] Requesting code for: ${cleanNum}`);
+                        const code = await sock.requestPairingCode(cleanNum);
+                        const formattedCode = code?.match(/.{1,4}/g)?.join('-') || code;
+                        console.log(`[Pair-${id}] Code generated successfully: ${formattedCode}`);
+                        updateSession(id, { status: 'pending', code: formattedCode });
+                        codeSent = true;
+                        if (res && !res.headersSent) {
+                            res.json({ code: formattedCode, id });
+                        }
+                    } catch (codeErr) {
+                        console.error(`[Pair-${id}] Critical error in requestPairingCode:`, codeErr);
+                        updateSession(id, { status: 'error', session: null });
+                        if (res && !res.headersSent) res.status(500).json({ error: 'Impossible de générer le code.' });
+                        await fs.remove(tempPath).catch(() => { });
+                    }
+                }, 4000);
+            }
 
         } catch (err) {
             console.error(`[${id}] Erreur socket:`, err.message);
