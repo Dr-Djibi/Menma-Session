@@ -114,10 +114,48 @@ async function pingAllBots() {
             console.log(`[PINGER] ${icon} ${session_id.slice(0, 18)}... → ${label}`);
         }
 
+        // Nettoyage automatique des doublons inactifs et bots hors ligne > 24h
+        await cleanupInactiveBots(client);
+
     } catch (err) {
         console.error('[PINGER ERR]', err.message);
     } finally {
         if (client) client.release();
+    }
+}
+
+/**
+ * Nettoie les sessions hors ligne obsolètes (> 24h) et supprime les doublons inactifs d'un même numéro.
+ */
+async function cleanupInactiveBots(client) {
+    try {
+        // 1. Supprimer les doublons hors ligne pour un même numéro (garder la plus récente)
+        const dupRes = await client.query(`
+            DELETE FROM active_bots
+            WHERE is_online = FALSE
+              AND session_id NOT IN (
+                  SELECT DISTINCT ON (owner_number) session_id
+                  FROM active_bots
+                  ORDER BY owner_number, is_online DESC, last_active DESC
+              )
+        `);
+
+        if (dupRes.rowCount > 0) {
+            console.log(`[CLEANUP] 🧹 Supprimé ${dupRes.rowCount} doublon(s) inactif(s).`);
+        }
+
+        // 2. Supprimer les bots hors ligne dont la dernière activité remonte à plus de 24 heures
+        const expireRes = await client.query(`
+            DELETE FROM active_bots
+            WHERE is_online = FALSE
+              AND (last_active < NOW() - INTERVAL '24 hours' OR last_active IS NULL)
+        `);
+
+        if (expireRes.rowCount > 0) {
+            console.log(`[CLEANUP] 🗑️ Supprimé ${expireRes.rowCount} bot(s) inactif(s) depuis > 24h.`);
+        }
+    } catch (err) {
+        console.error('[CLEANUP ERR]', err.message);
     }
 }
 
