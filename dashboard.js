@@ -66,4 +66,31 @@ router.post('/stats', async (req, res) => {
     }
 });
 
+router.post('/delete-bot', async (req, res) => {
+    const { password, session_id } = req.body;
+
+    if (!password || password !== DASHBOARD_PASSWORD) {
+        return res.status(401).json({ error: 'Mot de passe incorrect.' });
+    }
+
+    if (!session_id) {
+        return res.status(400).json({ error: 'Session ID requis.' });
+    }
+
+    let client;
+    try {
+        client = await pool.connect();
+        const result = await client.query('DELETE FROM active_bots WHERE session_id = $1', [session_id]);
+        if (result.rowCount === 0) {
+            return res.status(444).json({ error: 'Bot non trouvé.' });
+        }
+        res.json({ success: true, message: 'Bot supprimé avec succès.' });
+    } catch (err) {
+        console.error('[DASHBOARD DELETE ERR] :', err);
+        res.status(500).json({ error: 'Erreur lors de la suppression du bot.' });
+    } finally {
+        if (client) client.release();
+    }
+});
+
 module.exports = router;

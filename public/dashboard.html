@@ -245,13 +245,13 @@
 
         @media (min-width: 640px) {
             .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
+                grid-template-columns: repeat(3, 1fr);
             }
         }
 
-        @media (min-width: 900px) {
+        @media (min-width: 1024px) {
             .stats-grid {
-                grid-template-columns: repeat(4, 1fr);
+                grid-template-columns: repeat(7, 1fr);
             }
         }
 
@@ -290,6 +290,14 @@
 
         .stat-card.panel::before {
             background: var(--panel-color);
+        }
+
+        .stat-card.offline::before {
+            background: var(--danger);
+        }
+
+        .stat-card.uptime::before {
+            background: #f59e0b;
         }
 
         .stat-card:hover {
@@ -475,6 +483,89 @@
         }
 
         /* --- ADVANCED CONTROLS --- */
+        .toolbar-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .filter-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 6px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.82rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .filter-btn:hover {
+            color: var(--text-color);
+            border-color: var(--primary);
+        }
+
+        .filter-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 0 8px var(--primary-glow);
+        }
+
+        .platform-select {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .btn-export {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #10b981;
+            padding: 6px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.82rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-export:hover {
+            background: #10b981;
+            color: white;
+            box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
+        }
+
+        .results-count {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
         .search-container {
             position: relative;
             width: 100%;
@@ -920,7 +1011,12 @@
                 <h1>MENMA Dashbord</h1>
                 <p>Relais de session et surveillance de la distribution des bots</p>
             </div>
-            <button class="btn-logout" onclick="logout()"><i class="fa-solid fa-power-off"></i> Déconnexion</button>
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                <button class="btn-toggle-advanced" id="refreshBtn" onclick="refreshData()" title="Rafraîchir les données">
+                    <i class="fa-solid fa-rotate"></i> <span id="refreshText">Actualiser</span>
+                </button>
+                <button class="btn-logout" onclick="logout()"><i class="fa-solid fa-power-off"></i> Déconnexion</button>
+            </div>
         </div>
 
         <!-- CARDS STATS (PLATFORM INTEGRATION) -->
@@ -939,6 +1035,22 @@
                     <div class="stat-number" id="onlineBots" style="background: linear-gradient(135deg,#fff,#10b981);-webkit-background-clip:text;">0</div>
                 </div>
                 <div class="stat-icon" style="color:#10b981;"><i class="fa-solid fa-circle-check"></i></div>
+            </div>
+
+            <div class="stat-card offline">
+                <div class="stat-info">
+                    <h3>Hors Ligne</h3>
+                    <div class="stat-number" id="offlineBots" style="background: linear-gradient(135deg,#fff,var(--danger));-webkit-background-clip:text;">0</div>
+                </div>
+                <div class="stat-icon" style="color:var(--danger);"><i class="fa-solid fa-circle-xmark"></i></div>
+            </div>
+
+            <div class="stat-card uptime">
+                <div class="stat-info">
+                    <h3>Disponibilité</h3>
+                    <div class="stat-number" id="uptimeRate" style="background: linear-gradient(135deg,#fff,#f59e0b);-webkit-background-clip:text;">0%</div>
+                </div>
+                <div class="stat-icon" style="color:#f59e0b;"><i class="fa-solid fa-chart-line"></i></div>
             </div>
 
             <div class="stat-card koyeb">
@@ -969,29 +1081,37 @@
         <!-- MAIN CONTENT PANELS -->
         <div class="content-grid">
 
-            <!-- PANEL GAUCHE : STATS PAYS (LISTE / GRAPH SWITCH) -->
+            <!-- PANEL GAUCHE : STATS PAYS ET PLATEFORMES -->
             <div class="panel">
                 <div class="panel-header">
-                    <h2><i class="fa-solid fa-earth-africa"></i> Pays</h2>
+                    <h2><i class="fa-solid fa-chart-pie"></i> Statistiques & Répartition</h2>
 
                     <div class="view-toggle-buttons">
-                        <button class="view-btn active" id="btnViewList" onclick="switchCountryView('list')">
-                            <i class="fa-solid fa-list-ul"></i> Liste
+                        <button class="view-btn active" id="btnViewList" onclick="switchLeftView('list')">
+                            <i class="fa-solid fa-earth-africa"></i> Pays
                         </button>
-                        <button class="view-btn" id="btnViewChart" onclick="switchCountryView('chart')">
-                            <i class="fa-solid fa-chart-bar"></i> Graphe
+                        <button class="view-btn" id="btnViewChart" onclick="switchLeftView('chart')">
+                            <i class="fa-solid fa-chart-bar"></i> Graph Pays
+                        </button>
+                        <button class="view-btn" id="btnViewPlatformChart" onclick="switchLeftView('platform')">
+                            <i class="fa-solid fa-server"></i> Hébergement
                         </button>
                     </div>
                 </div>
 
-                <!-- LIST VIEW -->
+                <!-- LIST VIEW (PAYS) -->
                 <div class="country-list" id="countryList">
                     <!-- Rempli dynamiquement -->
                 </div>
 
-                <!-- CHART HISTOGRAM VIEW -->
+                <!-- CHART PAYS -->
                 <div class="chart-wrapper" id="countryChartWrapper" style="display: none;">
                     <canvas id="countryChart"></canvas>
+                </div>
+
+                <!-- CHART PLATEFORMES -->
+                <div class="chart-wrapper" id="platformChartWrapper" style="display: none;">
+                    <canvas id="platformChart"></canvas>
                 </div>
             </div>
 
@@ -1007,11 +1127,36 @@
                     </button>
                 </div>
 
-                <div class="search-container">
-                    <input type="text" id="searchInput" class="search-input"
-                        placeholder="Rechercher par propriétaire, numéro, plateforme ou pays..."
-                        oninput="filterTable()">
-                    <i class="fa-solid fa-magnifying-glass"></i>
+                <div class="toolbar-container">
+                    <div class="search-container">
+                        <input type="text" id="searchInput" class="search-input"
+                            placeholder="Rechercher par propriétaire, numéro, plateforme ou pays..."
+                            oninput="filterTable()">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </div>
+
+                    <div class="filter-row">
+                        <div class="filter-group">
+                            <button class="filter-btn active" id="filterAll" onclick="setStatusFilter('all')">Tous</button>
+                            <button class="filter-btn" id="filterOnline" onclick="setStatusFilter('online')">
+                                <i class="fa-solid fa-circle-check" style="color:#10b981"></i> En ligne
+                            </button>
+                            <button class="filter-btn" id="filterOffline" onclick="setStatusFilter('offline')">
+                                <i class="fa-solid fa-circle-xmark" style="color:var(--danger)"></i> Hors ligne
+                            </button>
+
+                            <select id="platformFilter" class="platform-select" onchange="filterTable()">
+                                <option value="all">Toutes les plateformes</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-group">
+                            <span class="results-count" id="resultsCount">0 bot(s) affiché(s)</span>
+                            <button class="btn-export" onclick="exportCSV()">
+                                <i class="fa-solid fa-file-csv"></i> Exporter CSV
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="table-responsive">
@@ -1046,8 +1191,10 @@
     <script>
         let cachedData = null;
         let isAdvancedMode = false;
-        let activeCountryView = 'list';
+        let activeLeftView = 'list';
+        let currentStatusFilter = 'all';
         let countryChartInstance = null;
+        let platformChartInstance = null;
 
         async function handleAuth(event) {
             event.preventDefault();
@@ -1115,8 +1262,15 @@
             if (!cachedData) return;
 
             // 1. Compteurs principaux
-            document.getElementById('totalBots').innerText  = cachedData.total;
-            document.getElementById('onlineBots').innerText = cachedData.totalOnline ?? 0;
+            const total = cachedData.total || 0;
+            const online = cachedData.totalOnline || 0;
+            const offline = Math.max(0, total - online);
+            const rate = total > 0 ? ((online / total) * 100).toFixed(1) : 0;
+
+            document.getElementById('totalBots').innerText   = total;
+            document.getElementById('onlineBots').innerText  = online;
+            document.getElementById('offlineBots').innerText = offline;
+            document.getElementById('uptimeRate').innerText  = `${rate}%`;
 
             // 2. Répartition plateformes
             let koyebCount = 0, renderCount = 0, panelCount = 0;
@@ -1132,7 +1286,9 @@
             document.getElementById('renderBots').innerText = renderCount;
             document.getElementById('panelBots').innerText  = panelCount;
 
+            populatePlatformFilter();
             renderCountryStats();
+            initPlatformChart();
             renderBotsTable();
         }
 
@@ -1200,20 +1356,74 @@
             });
         }
 
-        function switchCountryView(view) {
-            activeCountryView = view;
-            const btnList    = document.getElementById('btnViewList');
-            const btnChart   = document.getElementById('btnViewChart');
-            const countryList= document.getElementById('countryList');
-            const chartWrapper = document.getElementById('countryChartWrapper');
-            if (view === 'list') {
-                btnList.classList.add('active'); btnChart.classList.remove('active');
-                countryList.style.display = 'flex'; chartWrapper.style.display = 'none';
-            } else {
-                btnChart.classList.add('active'); btnList.classList.remove('active');
-                countryList.style.display = 'none'; chartWrapper.style.display = 'block';
-                if (countryChartInstance) countryChartInstance.resize();
-            }
+        function initPlatformChart() {
+            const ctx = document.getElementById('platformChart');
+            if (!ctx || !cachedData || !cachedData.platforms) return;
+            if (platformChartInstance) platformChartInstance.destroy();
+
+            const labels = cachedData.platforms.map(p => p.platform);
+            const dataCounts = cachedData.platforms.map(p => p.count);
+            const backgroundColors = [
+                'rgba(99, 102, 241, 0.85)',
+                'rgba(6, 182, 212, 0.85)',
+                'rgba(236, 72, 153, 0.85)',
+                'rgba(16, 185, 129, 0.85)',
+                'rgba(167, 139, 250, 0.85)',
+                'rgba(139, 127, 164, 0.85)'
+            ];
+
+            platformChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: dataCounts,
+                        backgroundColor: backgroundColors.slice(0, labels.length),
+                        borderColor: 'rgba(18, 11, 32, 0.9)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: '#e9e3ff', font: { family: 'Outfit', size: 12 } }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(18,11,32,0.95)',
+                            titleFont: { family: 'Outfit', size: 13, weight: '600' },
+                            bodyFont: { family: 'Outfit', size: 13 },
+                            borderColor: 'rgba(147,51,234,0.3)',
+                            borderWidth: 1,
+                            padding: 10
+                        }
+                    }
+                }
+            });
+        }
+
+        function switchLeftView(view) {
+            activeLeftView = view;
+            const btnList = document.getElementById('btnViewList');
+            const btnChart = document.getElementById('btnViewChart');
+            const btnPlatform = document.getElementById('btnViewPlatformChart');
+
+            const countryList = document.getElementById('countryList');
+            const countryChartWrapper = document.getElementById('countryChartWrapper');
+            const platformChartWrapper = document.getElementById('platformChartWrapper');
+
+            btnList.classList.toggle('active', view === 'list');
+            btnChart.classList.toggle('active', view === 'chart');
+            btnPlatform.classList.toggle('active', view === 'platform');
+
+            countryList.style.display = view === 'list' ? 'flex' : 'none';
+            countryChartWrapper.style.display = view === 'chart' ? 'block' : 'none';
+            platformChartWrapper.style.display = view === 'platform' ? 'block' : 'none';
+
+            if (view === 'chart' && countryChartInstance) countryChartInstance.resize();
+            if (view === 'platform' && platformChartInstance) platformChartInstance.resize();
         }
 
         /* ---- Tableau des bots avec ligne expandable ---- */
@@ -1307,6 +1517,12 @@
                                 <span class="detail-label"><i class="fa-regular fa-clock"></i> Dernière activité</span>
                                 <span class="detail-value">${formattedDate}</span>
                             </div>
+                            ${isAdvancedMode ? `
+                            <div class="detail-item" style="grid-column: 1 / -1; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px dashed rgba(255,255,255,0.1);">
+                                <button onclick="deleteBot('${bot.session_id}')" style="background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.4); padding: 8px 14px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.82rem; width: fit-content;">
+                                    <i class="fa-solid fa-trash-can"></i> Supprimer ce bot de la DB
+                                </button>
+                            </div>` : ''}
                         </div>
                     </td>`;
                 tableBody.appendChild(detailRow);
@@ -1328,6 +1544,101 @@
             });
         }
 
+        function populatePlatformFilter() {
+            const select = document.getElementById('platformFilter');
+            if (!select || !cachedData || !cachedData.platforms) return;
+
+            select.innerHTML = '<option value="all">Toutes les plateformes</option>';
+            cachedData.platforms.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.platform.toLowerCase();
+                opt.textContent = `${p.platform} (${p.count})`;
+                select.appendChild(opt);
+            });
+        }
+
+        function setStatusFilter(status) {
+            currentStatusFilter = status;
+            document.getElementById('filterAll').classList.toggle('active', status === 'all');
+            document.getElementById('filterOnline').classList.toggle('active', status === 'online');
+            document.getElementById('filterOffline').classList.toggle('active', status === 'offline');
+            filterTable();
+        }
+
+        function filterTable() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            const selectedPlatform = document.getElementById('platformFilter').value;
+            const rows = document.querySelectorAll('#botsTableBody tr.clickable-row');
+
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+                const idx = row.getAttribute('data-idx');
+                const bot = cachedData.bots[idx];
+                const detailRow = row.nextElementSibling;
+
+                if (!bot) return;
+
+                const textMatch = !query ||
+                    (bot.owner_name && bot.owner_name.toLowerCase().includes(query)) ||
+                    (bot.owner_number && bot.owner_number.toString().includes(query)) ||
+                    (bot.country && bot.country.toLowerCase().includes(query)) ||
+                    (bot.platform && bot.platform.toLowerCase().includes(query)) ||
+                    (bot.session_id && bot.session_id.toLowerCase().includes(query));
+
+                const statusMatch = currentStatusFilter === 'all' ||
+                    (currentStatusFilter === 'online' && bot.is_online === true) ||
+                    (currentStatusFilter === 'offline' && bot.is_online !== true);
+
+                const botPlatformLower = (bot.platform || 'autre').toLowerCase();
+                const platformMatch = selectedPlatform === 'all' || botPlatformLower === selectedPlatform;
+
+                if (textMatch && statusMatch && platformMatch) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                    if (detailRow && detailRow.classList.contains('detail-row')) {
+                        detailRow.querySelector('.detail-panel')?.classList.remove('open');
+                    }
+                }
+            });
+
+            const countElem = document.getElementById('resultsCount');
+            if (countElem) {
+                countElem.innerText = `${visibleCount} / ${cachedData.bots ? cachedData.bots.length : 0} bot(s)`;
+            }
+        }
+
+        function exportCSV() {
+            if (!cachedData || !cachedData.bots || cachedData.bots.length === 0) {
+                alert('Aucune donnée à exporter.');
+                return;
+            }
+
+            const headers = ['Propriétaire', 'Numéro', 'Pays', 'Plateforme', 'Statut', 'Bot URL', 'Uptime (sec)', 'Session ID', 'Dernière Activité'];
+            const rows = cachedData.bots.map(b => [
+                `"${(b.owner_name || '').replace(/"/g, '""')}"`,
+                `"${b.owner_number || ''}"`,
+                `"${(b.country || '').replace(/"/g, '""')}"`,
+                `"${(b.platform || '').replace(/"/g, '""')}"`,
+                b.is_online ? 'En ligne' : 'Hors ligne',
+                `"${b.bot_url || ''}"`,
+                b.uptime_sec || 0,
+                `"${b.session_id || ''}"`,
+                `"${new Date(b.last_active).toLocaleString('fr-FR')}"`
+            ]);
+
+            const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement('a');
+            link.setAttribute('href', encodedUri);
+            link.setAttribute('download', `menma_bots_telemetry_${new Date().toISOString().slice(0, 10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
         function toggleAdvancedMode() {
             const btn = document.getElementById('toggleAdvBtn');
             isAdvancedMode = !isAdvancedMode;
@@ -1344,20 +1655,65 @@
             filterTable();
         }
 
-        function filterTable() {
-            const query = document.getElementById('searchInput').value.toLowerCase().trim();
-            const tableRows = document.querySelectorAll('#botsTableBody tr');
+        async function refreshData() {
+            const pwd = sessionStorage.getItem('dash_pwd');
+            if (!pwd) return;
 
-            tableRows.forEach(row => {
-                if (row.querySelector('.no-data')) return;
+            const refreshBtn = document.getElementById('refreshBtn');
+            const refreshText = document.getElementById('refreshText');
+            refreshBtn.disabled = true;
+            refreshText.innerText = 'Chargement...';
 
-                const text = row.innerText.toLowerCase();
-                if (text.includes(query)) {
-                    row.style.display = '';
+            try {
+                const response = await fetch('/api/dashboard/stats', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: pwd })
+                });
+                if (response.ok) {
+                    cachedData = await response.json();
+                    renderData();
                 } else {
-                    row.style.display = 'none';
+                    alert('Erreur lors de la mise à jour des données.');
                 }
-            });
+            } catch (err) {
+                console.error(err);
+                alert('Erreur réseau.');
+            } finally {
+                refreshBtn.disabled = false;
+                refreshText.innerText = 'Actualiser';
+            }
+        }
+
+        async function deleteBot(sessionId) {
+            const pwd = sessionStorage.getItem('dash_pwd');
+            if (!pwd) {
+                alert('Session expirée.');
+                return;
+            }
+
+            if (!confirm(`Voulez-vous vraiment supprimer le bot avec la session ID :\n${sessionId} ?`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/dashboard/delete-bot', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: pwd, session_id: sessionId })
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    alert('Bot supprimé avec succès.');
+                    refreshData();
+                } else {
+                    alert(result.error || 'Erreur lors de la suppression.');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Erreur réseau lors de la suppression.');
+            }
         }
 
         function copySession(id) {
