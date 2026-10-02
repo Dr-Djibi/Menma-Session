@@ -1200,6 +1200,9 @@
                             <button class="btn-export" onclick="exportCSV()">
                                 <i class="fa-solid fa-file-csv"></i> Exporter CSV
                             </button>
+                            <button class="btn-export" onclick="runCleanup()" style="background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.3); color: #ef4444;">
+                                <i class="fa-solid fa-broom"></i> Purger Inactifs
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -1727,6 +1730,37 @@
             } finally {
                 refreshBtn.disabled = false;
                 refreshText.innerText = 'Actualiser';
+            }
+        }
+
+        async function runCleanup() {
+            const pwd = sessionStorage.getItem('dash_pwd');
+            if (!pwd) {
+                alert('Session expirée.');
+                return;
+            }
+
+            if (!confirm("Voulez-vous purger automatiquement tous les doublons hors ligne et les bots inactifs depuis plus de 24 heures ?")) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/dashboard/cleanup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: pwd })
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    alert(result.message);
+                    refreshData();
+                } else {
+                    alert(result.error || 'Erreur lors de la purge.');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Erreur réseau lors de la purge.');
             }
         }
 

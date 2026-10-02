@@ -93,4 +93,51 @@ router.post('/delete-bot', async (req, res) => {
     }
 });
 
+router.post('/cleanup', async (req, res) => {
+    const { password } = req.body;
+
+    if (!password || password !== DASHBOARD_PASSWORD) {
+        return res.status(401).json({ error: 'Mot de passe incorrect.' });
+    }
+
+    let client;
+    try {
+        client = await pool.connect();
+
+        // 1. Supprimer les doublons hors ligne pour un même numéro (garder la plus récente)
+        const dupRes = await client.query(`
+            DELETE FROM active_bots
+            WHERE is_online = FALSE
+              AND session_id NOT IN (
+                  SELECT DISTINCT ON (owner_number) session_id
+                  FROM active_bots
+                  ORDER BY owner_number, is_online DESC, last_active DESC
+              )
+        `);
+
+        // 2. Supprimer les bots hors ligne dont la dernière activité remonte à plus de 24h
+        const expireRes = await client.query(`
+            DELETE FROM active_bots
+            WHERE is_online = FALSE
+              AND (last_active < NOW() - INTERVAL '24 hours' OR last_active IS NULL)
+        `);
+
+        const deletedDuplicates = dupRes.rowCount || 0;
+        const deletedExpired = expireRes.rowCount || 0;
+
+        res.json({
+            success: true,
+            message: `Purger effectuée : ${deletedDuplicates} doublon(s) et ${deletedExpired} bot(s) inactif(s) (>24h) supprimé(s).`,
+            deletedDuplicates,
+            deletedExpired
+        });
+
+    } catch (err) {
+        console.error('[DASHBOARD CLEANUP ERR] :', err);
+        res.status(500).json({ error: 'Erreur lors de la purge de la base de données.' });
+    } finally {
+        if (client) client.release();
+    }
+});
+
 module.exports = router;
