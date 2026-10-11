@@ -214,11 +214,11 @@ input:focus {
     background: rgba(0, 0, 0, 0.3);
     border: 1px dashed var(--accent);
     border-radius: 20px;
-    padding: 24px;
-    font-size: 2.2rem;
+    padding: 20px;
+    font-size: 1.5rem;
     font-weight: 700;
     color: var(--accent);
-    letter-spacing: 6px;
+    letter-spacing: 4px;
     margin: 24px 0;
     text-shadow: 0 0 20px var(--accent-glow);
     text-align: center;
