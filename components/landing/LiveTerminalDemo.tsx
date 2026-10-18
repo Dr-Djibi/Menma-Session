@@ -25,19 +25,18 @@ export default function LiveTerminalDemo() {
 
   useGSAP(
     () => {
-      // Entrée de la section au scroll
-      gsap.from('.terminal-wrapper', {
-        scrollTrigger: {
-          trigger: '.terminal-wrapper',
-          start: 'top 82%',
-          toggleActions: 'play none none none',
-        },
-        opacity: 0,
-        y: 36,
-        duration: 0.8,
-        ease: 'power3.out',
-        onComplete: startTyping,
-      });
+      gsap.fromTo(
+        '.terminal-wrapper',
+        { y: 15, opacity: 0.5 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.6,
+          ease: 'power2.out',
+          clearProps: 'all',
+        }
+      );
+      startTyping();
     },
     { scope: sectionRef }
   );

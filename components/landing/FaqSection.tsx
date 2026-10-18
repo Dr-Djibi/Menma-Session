@@ -3,10 +3,7 @@
 import { useRef, useState } from 'react';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ChevronDown, HelpCircle } from 'lucide-react';
-
-gsap.registerPlugin(useGSAP, ScrollTrigger);
 
 interface FaqItem {
   q: string;
@@ -42,30 +39,18 @@ export default function FaqSection() {
 
   useGSAP(
     () => {
-      gsap.from('.faq-header', {
-        scrollTrigger: {
-          trigger: '.faq-header',
-          start: 'top 85%',
-          toggleActions: 'play none none none',
-        },
-        opacity: 0,
-        y: 25,
-        duration: 0.7,
-        ease: 'power3.out',
-      });
-
-      gsap.from('.faq-card', {
-        scrollTrigger: {
-          trigger: '.faq-list',
-          start: 'top 80%',
-          toggleActions: 'play none none none',
-        },
-        opacity: 0,
-        y: 25,
-        stagger: 0.1,
-        duration: 0.6,
-        ease: 'power3.out',
-      });
+      gsap.fromTo(
+        '.faq-card',
+        { opacity: 0.5, y: 15 },
+        {
+          opacity: 1,
+          y: 0,
+          stagger: 0.08,
+          duration: 0.5,
+          ease: 'power2.out',
+          clearProps: 'all',
+        }
+      );
     },
     { scope: containerRef }
   );
@@ -75,16 +60,16 @@ export default function FaqSection() {
   };
 
   return (
-    <section ref={containerRef} className="px-4 sm:px-6 max-w-4xl mx-auto py-4 mb-8">
-      <div className="faq-header text-center mb-5">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold/10 border border-gold/30 text-gold text-xs font-semibold uppercase tracking-wider mb-2">
+    <section ref={containerRef} className="px-4 sm:px-6 max-w-4xl mx-auto py-8 mb-12">
+      <div className="faq-header text-center mb-6">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold/10 border border-gold/30 text-gold text-xs font-semibold uppercase tracking-wider mb-2.5">
           <HelpCircle className="w-3.5 h-3.5" />
           <span>Foire Aux Questions</span>
         </div>
         <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mb-2">
           Questions Fréquentes
         </h2>
-        <p className="text-sm text-neutral-400 max-w-md mx-auto">
+        <p className="text-xs sm:text-sm text-neutral-400 max-w-md mx-auto">
           Tout ce qu&apos;il faut savoir pour lier votre bot Menma-MD en toute sérénité.
         </p>
       </div>
@@ -95,8 +80,8 @@ export default function FaqSection() {
           return (
             <div
               key={idx}
-              className={`faq-card glass-panel rounded-2xl border transition-all duration-300 overflow-hidden ${
-                isOpen ? 'border-gold/40 bg-gold/[0.03]' : 'border-white/5 hover:border-white/15'
+              className={`faq-card glass-panel rounded-2xl border transition-all duration-300 overflow-hidden shadow-md ${
+                isOpen ? 'border-gold/40 bg-gold/[0.04]' : 'border-white/10 hover:border-white/20'
               }`}
             >
               <button
@@ -118,7 +103,7 @@ export default function FaqSection() {
               </button>
 
               {isOpen && (
-                <div className="px-5 pb-5 pt-0 text-xs sm:text-sm text-neutral-300 leading-relaxed border-t border-white/5 mt-1 pt-3 animate-fadeIn">
+                <div className="px-5 pb-5 pt-0 text-xs sm:text-sm text-neutral-300 leading-relaxed border-t border-white/5 mt-1 pt-3">
                   {item.a}
                 </div>
               )}

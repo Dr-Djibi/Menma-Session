@@ -1,13 +1,9 @@
 'use client';
 
 import { useRef } from 'react';
-import Link from 'next/link';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Smartphone, CheckCircle2, ArrowRight } from 'lucide-react';
-
-gsap.registerPlugin(useGSAP, ScrollTrigger);
+import { Smartphone, CheckCircle2 } from 'lucide-react';
 
 const steps = [
   {
@@ -35,47 +31,25 @@ export default function HowItWorks() {
 
   useGSAP(
     () => {
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: containerRef.current,
-          start: 'top 88%',
-          toggleActions: 'play none none none',
-        },
-      });
-
-      tl.from('.how-header', {
-        opacity: 0,
-        y: 20,
-        duration: 0.5,
-        ease: 'power3.out',
-      })
-        .from(
-          '.how-step-card',
-          {
-            opacity: 0,
-            y: 25,
-            stagger: 0.1,
-            duration: 0.6,
-            ease: 'power3.out',
-          },
-          '-=0.2'
-        )
-        .from(
-          '.how-cta-btn',
-          {
-            opacity: 0,
-            scale: 0.95,
-            duration: 0.4,
-            ease: 'back.out(1.5)',
-          },
-          '-=0.2'
-        );
+      // Animation douce sans cacher le contenu si le scroll est déjà passé
+      gsap.fromTo(
+        '.how-step-card',
+        { y: 15, opacity: 0.4 },
+        {
+          y: 0,
+          opacity: 1,
+          stagger: 0.1,
+          duration: 0.6,
+          ease: 'power2.out',
+          clearProps: 'all',
+        }
+      );
     },
     { scope: containerRef }
   );
 
   return (
-    <section ref={containerRef} className="px-4 sm:px-6 max-w-5xl mx-auto py-3 mb-4">
+    <section ref={containerRef} className="px-4 sm:px-6 max-w-5xl mx-auto py-8 mb-10">
       <div className="how-header text-center mb-6">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold/10 border border-gold/30 text-gold text-xs font-semibold uppercase tracking-wider mb-2.5">
           <Smartphone className="w-3.5 h-3.5" />
@@ -89,46 +63,36 @@ export default function HowItWorks() {
         </p>
       </div>
 
-      <div className="how-steps-grid grid grid-cols-1 md:grid-cols-3 gap-3.5 sm:gap-4 relative">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
         {steps.map((step, idx) => (
           <div
             key={idx}
-            className="how-step-card glass-panel rounded-2xl p-5 border border-white/5 relative flex flex-col justify-between hover:border-gold/30 transition-all group"
+            className="how-step-card glass-panel rounded-2xl p-6 border border-white/10 flex flex-col justify-between hover:border-gold/40 transition-all duration-300 group shadow-lg"
           >
             <div>
-              <div className="flex items-center justify-between mb-3">
-                <span className="font-mono text-2xl sm:text-3xl font-black text-gold/35 group-hover:text-gold transition-colors">
+              <div className="flex items-center justify-between mb-4">
+                <span className="font-mono text-3xl font-black text-gold/40 group-hover:text-gold transition-colors">
                   {step.num}
                 </span>
-                <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-white/5 text-neutral-300 border border-white/10">
+                <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-white/5 text-neutral-300 border border-white/10 font-medium">
                   {step.badge}
                 </span>
               </div>
 
-              <h3 className="text-base font-bold text-white mb-1.5 group-hover:text-gold-light transition-colors">
+              <h3 className="text-base font-bold text-white mb-2 group-hover:text-gold-light transition-colors">
                 {step.title}
               </h3>
-              <p className="text-xs text-neutral-400 leading-relaxed">
+              <p className="text-xs sm:text-sm text-neutral-400 leading-relaxed">
                 {step.desc}
               </p>
             </div>
 
-            <div className="pt-4 mt-3 border-t border-white/5 flex items-center gap-2 text-[11px] text-neutral-400">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
+            <div className="pt-4 mt-4 border-t border-white/5 flex items-center gap-2 text-xs text-neutral-400">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
               <span>Étape simple & guidée</span>
             </div>
           </div>
         ))}
-      </div>
-
-      <div className="how-cta-btn mt-4 text-center">
-        <Link
-          href="/pair"
-          className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gold hover:bg-gold-light text-dark-950 font-bold text-xs tracking-wider uppercase transition-all active:scale-95 touch-scale shadow-lg"
-        >
-          <span>Démarrer maintenant</span>
-          <ArrowRight className="w-4 h-4" />
-        </Link>
       </div>
     </section>
   );

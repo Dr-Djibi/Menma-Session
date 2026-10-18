@@ -16,33 +16,18 @@ export default function MobileInteractiveCards() {
 
   useGSAP(
     () => {
-      // Titre de section
-      gsap.from('.cards-heading', {
-        scrollTrigger: {
-          trigger: '.cards-heading',
-          start: 'top 88%',
-          toggleActions: 'play none none none',
-        },
-        opacity: 0,
-        y: 24,
-        duration: 0.7,
-        ease: 'power3.out',
-      });
-
-      // Cartes avec stagger au scroll
-      gsap.from('.interactive-card', {
-        scrollTrigger: {
-          trigger: '.interactive-card',
-          start: 'top 85%',
-          toggleActions: 'play none none none',
-        },
-        opacity: 0,
-        y: 40,
-        scale: 0.97,
-        stagger: 0.14,
-        duration: 0.75,
-        ease: 'power3.out',
-      });
+      gsap.fromTo(
+        '.interactive-card',
+        { y: 15, opacity: 0.5 },
+        {
+          y: 0,
+          opacity: 1,
+          stagger: 0.1,
+          duration: 0.5,
+          ease: 'power2.out',
+          clearProps: 'all',
+        }
+      );
 
       // Hover magnetic effect sur les cartes (desktop)
       document.querySelectorAll('.interactive-card').forEach((card) => {
