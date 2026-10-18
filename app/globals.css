@@ -1,6 +1,21 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=DM+Mono:wght@300;400;500&display=swap');
 @import "tailwindcss";
 
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500;600&display=swap');
+@theme {
+  --color-dark-950: #060608;
+  --color-dark-900: #0a0a0c;
+  --color-dark-850: #101014;
+  --color-dark-800: #14141a;
+  --color-dark-700: #1e1e26;
+
+  --color-gold: #C8A84B;
+  --color-gold-light: #E2C474;
+  --color-gold-dim: #b8952c;
+  --color-gold-muted: rgba(200, 168, 75, 0.15);
+
+  --font-sans: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'DM Mono', monospace;
+}
 
 :root {
   --bg-dark: #0a0a0c;
@@ -26,7 +41,7 @@
 body {
   background-color: var(--bg-dark);
   color: var(--text);
-  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: var(--font-sans), 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   overflow-x: hidden;
   min-height: 100vh;
   margin: 0;
