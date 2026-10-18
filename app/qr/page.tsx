@@ -17,6 +17,7 @@ import {
   Sparkles,
   Zap,
 } from 'lucide-react';
+import { showToast } from '@/components/ui/Toast';
 
 gsap.registerPlugin(useGSAP);
 
@@ -117,6 +118,7 @@ export default function QRPage() {
     navigator.clipboard?.writeText(sessionId);
     setCopiedSession(true);
     triggerHaptic(30);
+    showToast('Session ID copié dans le presse-papier !');
     setTimeout(() => setCopiedSession(false), 2500);
   };
 

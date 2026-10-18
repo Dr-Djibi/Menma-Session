@@ -16,6 +16,7 @@ import {
   AlertCircle,
   Sparkles,
 } from 'lucide-react';
+import { showToast } from '@/components/ui/Toast';
 
 gsap.registerPlugin(useGSAP);
 
@@ -166,6 +167,7 @@ export default function PairPage() {
     navigator.clipboard?.writeText(pairCode.replace(/-/g, ''));
     setCopiedCode(true);
     triggerHaptic(30);
+    showToast('Code de jumelage copié !');
     setTimeout(() => setCopiedCode(false), 2500);
   };
 
@@ -175,6 +177,7 @@ export default function PairPage() {
     navigator.clipboard?.writeText(sessionId);
     setCopiedSession(true);
     triggerHaptic(30);
+    showToast('Session ID copié dans le presse-papier !');
     setTimeout(() => setCopiedSession(false), 2500);
   };
 

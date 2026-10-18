@@ -3,12 +3,20 @@ import './globals.css';
 import Navbar from '@/components/landing/Navbar';
 import AmbientSpotlight from '@/components/ui/AmbientSpotlight';
 import MobileBottomNav from '@/components/ui/MobileBottomNav';
+import Toast from '@/components/ui/Toast';
 
 export const metadata: Metadata = {
   title: 'Menma Session Generator | WhatsApp Protocol',
   description: 'Générateur de Session WhatsApp pour le bot Menma-MD. Code de jumelage, scan QR et configuration .env.',
+  manifest: '/manifest.json',
   icons: {
-    icon: '/favicon.ico',
+    icon: '/icon.svg',
+    apple: '/icon.svg',
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'Menma Session',
   },
 };
 
@@ -29,6 +37,7 @@ export default function RootLayout({
       <body className="bg-mesh-pattern antialiased min-h-screen flex flex-col relative selection:bg-gold/30 selection:text-gold-light">
         <AmbientSpotlight />
         <Navbar />
+        <Toast />
 
         <main className="flex-1 pb-20 md:pb-8 relative z-10">
           {children}
