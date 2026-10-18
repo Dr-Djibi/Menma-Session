@@ -65,8 +65,8 @@ export default function MobileInteractiveCards() {
   };
 
   return (
-    <section ref={sectionRef} className="px-4 sm:px-6 max-w-5xl mx-auto py-8 mb-20">
-      <div className="cards-heading text-center mb-8">
+    <section ref={sectionRef} className="px-4 sm:px-6 max-w-5xl mx-auto py-4 mb-8">
+      <div className="cards-heading text-center mb-5">
         <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight mb-2">
           Méthodes de connexion simples
         </h2>
@@ -197,10 +197,10 @@ export default function MobileInteractiveCards() {
                 ))}
               </div>
               <p className="text-xs text-neutral-400 text-center mb-4">
-                {activeStep === 1 && '1. Session ID & Numéro Owner'}
-                {activeStep === 2 && '2. Base de données PostgreSQL'}
-                {activeStep === 3 && '3. Options & Chatbot'}
-                {activeStep === 4 && '4. Exportation du fichier'}
+                {activeStep === 1 && '1. Authentification (Session & Owner)'}
+                {activeStep === 2 && '2. Identité (Nom, Préfixe, Timezone)'}
+                {activeStep === 3 && '3. Statuts & Likes automatiques'}
+                {activeStep === 4 && '4. Stickers & Base de données'}
               </p>
             </div>
           </div>

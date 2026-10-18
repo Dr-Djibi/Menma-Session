@@ -98,7 +98,7 @@ export default function StatsCounter() {
   );
 
   return (
-    <section ref={containerRef} className="px-4 sm:px-6 max-w-5xl mx-auto py-6 mb-16">
+    <section ref={containerRef} className="px-4 sm:px-6 max-w-5xl mx-auto py-2 mb-6">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
         {stats.map((item, idx) => {
           const Icon = item.icon;

@@ -63,7 +63,7 @@ export default function LiveTerminalDemo() {
   }
 
   return (
-    <section ref={sectionRef} className="px-4 sm:px-6 max-w-4xl mx-auto py-8 mb-24">
+    <section ref={sectionRef} className="px-4 sm:px-6 max-w-4xl mx-auto py-4 mb-8">
       <div className="terminal-wrapper glass-panel rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
         {/* Terminal Header */}
         <div className="px-4 py-3 bg-black/60 border-b border-white/10 flex items-center justify-between">

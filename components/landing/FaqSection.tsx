@@ -75,9 +75,9 @@ export default function FaqSection() {
   };
 
   return (
-    <section ref={containerRef} className="px-4 sm:px-6 max-w-4xl mx-auto py-12 mb-20">
-      <div className="faq-header text-center mb-10">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold/10 border border-gold/30 text-gold text-xs font-semibold uppercase tracking-wider mb-3">
+    <section ref={containerRef} className="px-4 sm:px-6 max-w-4xl mx-auto py-4 mb-8">
+      <div className="faq-header text-center mb-5">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold/10 border border-gold/30 text-gold text-xs font-semibold uppercase tracking-wider mb-2">
           <HelpCircle className="w-3.5 h-3.5" />
           <span>Foire Aux Questions</span>
         </div>

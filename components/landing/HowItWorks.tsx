@@ -75,7 +75,7 @@ export default function HowItWorks() {
   );
 
   return (
-    <section ref={containerRef} className="px-4 sm:px-6 max-w-5xl mx-auto py-6 sm:py-8 mb-12">
+    <section ref={containerRef} className="px-4 sm:px-6 max-w-5xl mx-auto py-3 mb-4">
       <div className="how-header text-center mb-6">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold/10 border border-gold/30 text-gold text-xs font-semibold uppercase tracking-wider mb-2.5">
           <Smartphone className="w-3.5 h-3.5" />
@@ -121,7 +121,7 @@ export default function HowItWorks() {
         ))}
       </div>
 
-      <div className="how-cta-btn mt-6 text-center">
+      <div className="how-cta-btn mt-4 text-center">
         <Link
           href="/pair"
           className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gold hover:bg-gold-light text-dark-950 font-bold text-xs tracking-wider uppercase transition-all active:scale-95 touch-scale shadow-lg"
