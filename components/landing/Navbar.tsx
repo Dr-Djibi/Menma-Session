@@ -1,14 +1,51 @@
 'use client';
 
 import Link from 'next/link';
-import { ShieldCheck, Zap } from 'lucide-react';
+import { useRef } from 'react';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
+import { Zap } from 'lucide-react';
+
+gsap.registerPlugin(useGSAP);
 
 export default function Navbar() {
+  const navRef = useRef<HTMLElement>(null);
+
+  useGSAP(
+    () => {
+      gsap.from('.nav-item', {
+        opacity: 0,
+        y: -12,
+        duration: 0.5,
+        stagger: 0.08,
+        ease: 'power2.out',
+        delay: 0.2,
+      });
+      gsap.from('.nav-logo', {
+        opacity: 0,
+        x: -20,
+        duration: 0.6,
+        ease: 'power3.out',
+      });
+      gsap.from('.nav-badge', {
+        opacity: 0,
+        scale: 0.8,
+        duration: 0.5,
+        ease: 'back.out(1.7)',
+        delay: 0.4,
+      });
+    },
+    { scope: navRef }
+  );
+
   return (
-    <header className="sticky top-0 z-40 w-full glass-panel border-b border-white/5 px-4 md:px-8 py-3.5 transition-all">
+    <header
+      ref={navRef}
+      className="sticky top-0 z-40 w-full glass-panel border-b border-white/5 px-4 md:px-8 py-3.5 transition-all"
+    >
       <div className="max-w-6xl mx-auto flex items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-2.5 group">
+        <Link href="/" className="nav-logo flex items-center gap-2.5 group">
           <div className="w-8 h-8 rounded-lg bg-gold/15 border border-gold/30 flex items-center justify-center transition-transform group-hover:scale-105">
             <Zap className="w-4 h-4 text-gold" />
           </div>
@@ -23,7 +60,7 @@ export default function Navbar() {
         </Link>
 
         {/* Live operational badge */}
-        <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/25">
+        <div className="nav-badge flex items-center gap-2 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/25">
           <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 -ml-3.5" />
           <span className="text-xs font-medium text-emerald-300">En ligne</span>
@@ -31,22 +68,19 @@ export default function Navbar() {
 
         {/* Desktop Quick Nav Links */}
         <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-neutral-300">
-          <Link href="/pair" className="hover:text-gold transition-colors">
+          <Link href="/pair" className="nav-item hover:text-gold transition-colors">
             Code Pairing
           </Link>
-          <Link href="/qr" className="hover:text-gold transition-colors">
+          <Link href="/qr" className="nav-item hover:text-gold transition-colors">
             QR Scan
           </Link>
-          <Link href="/env" className="hover:text-gold transition-colors">
+          <Link href="/env" className="nav-item hover:text-gold transition-colors">
             Générateur .ENV
-          </Link>
-          <Link href="/dashboard" className="hover:text-gold transition-colors">
-            Dashboard
           </Link>
         </nav>
 
         {/* GitHub link button */}
-        <div className="flex items-center gap-3">
+        <div className="nav-item flex items-center gap-3">
           <a
             href="https://github.com/Dr-Djibi/Menma-MD"
             target="_blank"

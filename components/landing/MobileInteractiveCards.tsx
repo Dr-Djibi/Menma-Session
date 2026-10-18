@@ -4,9 +4,10 @@ import { useRef, useState } from 'react';
 import Link from 'next/link';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
-import { KeyRound, QrCode, FileCode2, LayoutDashboard, Copy, Check, ArrowUpRight, Activity } from 'lucide-react';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { KeyRound, QrCode, FileCode2, Copy, Check, ArrowUpRight } from 'lucide-react';
 
-gsap.registerPlugin(useGSAP);
+gsap.registerPlugin(useGSAP, ScrollTrigger);
 
 export default function MobileInteractiveCards() {
   const sectionRef = useRef<HTMLDivElement>(null);
@@ -15,12 +16,43 @@ export default function MobileInteractiveCards() {
 
   useGSAP(
     () => {
-      gsap.from('.interactive-card', {
+      // Titre de section
+      gsap.from('.cards-heading', {
+        scrollTrigger: {
+          trigger: '.cards-heading',
+          start: 'top 88%',
+          toggleActions: 'play none none none',
+        },
         opacity: 0,
-        y: 30,
-        stagger: 0.12,
-        duration: 0.8,
-        ease: 'power2.out',
+        y: 24,
+        duration: 0.7,
+        ease: 'power3.out',
+      });
+
+      // Cartes avec stagger au scroll
+      gsap.from('.interactive-card', {
+        scrollTrigger: {
+          trigger: '.interactive-card',
+          start: 'top 85%',
+          toggleActions: 'play none none none',
+        },
+        opacity: 0,
+        y: 40,
+        scale: 0.97,
+        stagger: 0.14,
+        duration: 0.75,
+        ease: 'power3.out',
+      });
+
+      // Hover magnetic effect sur les cartes (desktop)
+      document.querySelectorAll('.interactive-card').forEach((card) => {
+        const el = card as HTMLElement;
+        el.addEventListener('mouseenter', () => {
+          gsap.to(el, { y: -4, scale: 1.01, duration: 0.3, ease: 'power2.out' });
+        });
+        el.addEventListener('mouseleave', () => {
+          gsap.to(el, { y: 0, scale: 1, duration: 0.4, ease: 'power2.out' });
+        });
       });
     },
     { scope: sectionRef }
@@ -34,7 +66,7 @@ export default function MobileInteractiveCards() {
 
   return (
     <section ref={sectionRef} className="px-4 sm:px-6 max-w-5xl mx-auto py-8 mb-20">
-      <div className="text-center mb-8">
+      <div className="cards-heading text-center mb-8">
         <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight mb-2">
           Trois modes de connexion, zéro friction
         </h2>
@@ -45,7 +77,7 @@ export default function MobileInteractiveCards() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
         {/* CARTE 1: CODE PAIRING */}
-        <div className="interactive-card glass-panel rounded-2xl p-5 sm:p-6 border border-white/10 hover:border-gold/40 transition-all flex flex-col justify-between">
+        <div className="interactive-card glass-panel rounded-2xl p-5 sm:p-6 border border-white/10 hover:border-gold/40 transition-colors flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-4">
               <div className="w-10 h-10 rounded-xl bg-gold/15 border border-gold/30 flex items-center justify-center text-gold">
@@ -61,7 +93,6 @@ export default function MobileInteractiveCards() {
               Entrez simplement votre numéro WhatsApp. Recevez un code à 8 caractères à entrer directement dans WhatsApp &gt; Appareils connectés.
             </p>
 
-            {/* Micro-interaction interactive */}
             <div className="p-3 rounded-xl bg-black/40 border border-white/10 mb-4 flex items-center justify-between">
               <div>
                 <span className="text-[10px] uppercase font-mono tracking-wider text-neutral-400 block mb-0.5">
@@ -92,7 +123,7 @@ export default function MobileInteractiveCards() {
         </div>
 
         {/* CARTE 2: SCAN QR */}
-        <div className="interactive-card glass-panel rounded-2xl p-5 sm:p-6 border border-white/10 hover:border-gold/40 transition-all flex flex-col justify-between">
+        <div className="interactive-card glass-panel rounded-2xl p-5 sm:p-6 border border-white/10 hover:border-gold/40 transition-colors flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-4">
               <div className="w-10 h-10 rounded-xl bg-gold/15 border border-gold/30 flex items-center justify-center text-gold">
@@ -108,7 +139,6 @@ export default function MobileInteractiveCards() {
               Scannez le QR Code en direct depuis WhatsApp pour lier votre session. Idéal pour scanner depuis un second écran ou une tablette.
             </p>
 
-            {/* Animation QR visual simulation */}
             <div className="p-3 rounded-xl bg-black/40 border border-white/10 mb-4 flex items-center gap-3">
               <div className="relative w-12 h-12 bg-white/10 rounded-lg flex items-center justify-center border border-white/20 overflow-hidden flex-shrink-0">
                 <QrCode className="w-7 h-7 text-gold opacity-80" />
@@ -130,38 +160,48 @@ export default function MobileInteractiveCards() {
           </Link>
         </div>
 
-        {/* CARTE 3: GÉNÉRATEUR .ENV */}
-        <div className="interactive-card glass-panel rounded-2xl p-5 sm:p-6 border border-white/10 hover:border-gold/40 transition-all flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-10 h-10 rounded-xl bg-gold/15 border border-gold/30 flex items-center justify-center text-gold">
-                <FileCode2 className="w-5 h-5" />
+        {/* CARTE 3: GÉNÉRATEUR .ENV — pleine largeur */}
+        <div className="interactive-card md:col-span-2 glass-panel rounded-2xl p-5 sm:p-6 border border-white/10 hover:border-gold/40 transition-colors flex flex-col justify-between">
+          <div className="md:flex md:items-start md:gap-8">
+            <div className="flex-1">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-10 h-10 rounded-xl bg-gold/15 border border-gold/30 flex items-center justify-center text-gold">
+                  <FileCode2 className="w-5 h-5" />
+                </div>
+                <span className="text-[11px] font-mono uppercase px-2.5 py-1 rounded-full bg-blue-500/10 text-blue-300 border border-blue-500/20 font-medium">
+                  Assistant 4 étapes
+                </span>
               </div>
-              <span className="text-[11px] font-mono uppercase px-2.5 py-1 rounded-full bg-blue-500/10 text-blue-300 border border-blue-500/20 font-medium">
-                Assistant 4 étapes
-              </span>
+
+              <h3 className="text-lg font-bold text-white mb-1.5">Générateur de Configuration .ENV</h3>
+              <p className="text-xs sm:text-sm text-neutral-400 mb-4 leading-relaxed">
+                Configurez tous les paramètres de votre bot (Session ID, Owner, Database, Chatbot, Anti-Delete) sans risquer d&apos;erreur de syntaxe.
+              </p>
             </div>
 
-            <h3 className="text-lg font-bold text-white mb-1.5">Générateur de Configuration .ENV</h3>
-            <p className="text-xs sm:text-sm text-neutral-400 mb-4 leading-relaxed">
-              Configurez tous les paramètres de votre bot (Session ID, Owner, Database, Chatbot, Anti-Delete) sans risquer d&apos;erreur de syntaxe.
-            </p>
-
             {/* Stepper micro-preview */}
-            <div className="flex items-center justify-between gap-1 p-2 rounded-xl bg-black/40 border border-white/10 mb-4">
-              {[1, 2, 3, 4].map((step) => (
-                <button
-                  key={step}
-                  onClick={() => setActiveStep(step)}
-                  className={`flex-1 py-1.5 rounded-lg text-[11px] font-mono font-semibold transition-all touch-scale ${
-                    activeStep === step
-                      ? 'bg-gold text-dark-950 shadow-sm'
-                      : 'text-neutral-400 hover:text-white bg-white/5'
-                  }`}
-                >
-                  Étape {step}
-                </button>
-              ))}
+            <div className="flex-1">
+              <div className="flex items-center justify-between gap-1 p-2 rounded-xl bg-black/40 border border-white/10 mb-4">
+                {[1, 2, 3, 4].map((step) => (
+                  <button
+                    key={step}
+                    onClick={() => setActiveStep(step)}
+                    className={`flex-1 py-1.5 rounded-lg text-[11px] font-mono font-semibold transition-all touch-scale ${
+                      activeStep === step
+                        ? 'bg-gold text-dark-950 shadow-sm'
+                        : 'text-neutral-400 hover:text-white bg-white/5'
+                    }`}
+                  >
+                    Étape {step}
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs text-neutral-500 text-center mb-4">
+                {activeStep === 1 && 'Session ID & Owner WhatsApp'}
+                {activeStep === 2 && 'Base de données PostgreSQL'}
+                {activeStep === 3 && 'Chatbot AI & Anti-Delete'}
+                {activeStep === 4 && 'Génération & Export .env'}
+              </p>
             </div>
           </div>
 
@@ -170,42 +210,6 @@ export default function MobileInteractiveCards() {
             className="w-full min-h-[46px] rounded-xl bg-white/5 hover:bg-white/10 active:scale-95 text-white font-semibold text-xs tracking-wide border border-white/15 flex items-center justify-center gap-1.5 transition-all touch-scale"
           >
             <span>GÉNÉRER MON .ENV</span>
-            <ArrowUpRight className="w-3.5 h-3.5 text-neutral-400" />
-          </Link>
-        </div>
-
-        {/* CARTE 4: DASHBOARD TÉLÉMÉTRIE */}
-        <div className="interactive-card glass-panel rounded-2xl p-5 sm:p-6 border border-white/10 hover:border-gold/40 transition-all flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-10 h-10 rounded-xl bg-gold/15 border border-gold/30 flex items-center justify-center text-gold">
-                <LayoutDashboard className="w-5 h-5" />
-              </div>
-              <span className="text-[11px] font-mono uppercase px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 font-medium">
-                Admin Télémétrie
-              </span>
-            </div>
-
-            <h3 className="text-lg font-bold text-white mb-1.5">Surveillance & Télémétrie Bots</h3>
-            <p className="text-xs sm:text-sm text-neutral-400 mb-4 leading-relaxed">
-              Visualisez tous les bots connectés en temps réel, leur hébergeur (Koyeb, Render, VPS), pays d&apos;origine et uptime avec pinger automatique.
-            </p>
-
-            {/* Live health pill visual */}
-            <div className="p-3 rounded-xl bg-black/40 border border-white/10 mb-4 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Activity className="w-4 h-4 text-emerald-400 animate-pulse" />
-                <span className="text-xs font-semibold text-white">Santé des serveurs</span>
-              </div>
-              <span className="text-xs font-mono font-bold text-emerald-400">99.9% Keep-Alive</span>
-            </div>
-          </div>
-
-          <Link
-            href="/dashboard"
-            className="w-full min-h-[46px] rounded-xl bg-white/5 hover:bg-white/10 active:scale-95 text-white font-semibold text-xs tracking-wide border border-white/15 flex items-center justify-center gap-1.5 transition-all touch-scale"
-          >
-            <span>ACCÉDER AU DASHBOARD</span>
             <ArrowUpRight className="w-3.5 h-3.5 text-neutral-400" />
           </Link>
         </div>

@@ -1,7 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useRef, useState } from 'react';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Terminal, Shield, RefreshCw } from 'lucide-react';
+
+gsap.registerPlugin(useGSAP, ScrollTrigger);
 
 const mockLogs = [
   { time: '14:02:11', text: '[BAILEYS] Initialisation du socket WhatsApp multi-device...', type: 'info' },
@@ -14,28 +19,52 @@ const mockLogs = [
 ];
 
 export default function LiveTerminalDemo() {
-  const [logs, setLogs] = useState(mockLogs.slice(0, 3));
-  const [currentIndex, setCurrentIndex] = useState(3);
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const tlRef = useRef<gsap.core.Timeline | null>(null);
+  const [visibleCount, setVisibleCount] = useState(0);
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentIndex((prev) => {
-        const next = (prev + 1) % (mockLogs.length + 1);
-        if (next === 0) {
-          setLogs(mockLogs.slice(0, 2));
-          return 2;
-        }
-        setLogs(mockLogs.slice(0, next));
-        return next;
+  useGSAP(
+    () => {
+      // Entrée de la section au scroll
+      gsap.from('.terminal-wrapper', {
+        scrollTrigger: {
+          trigger: '.terminal-wrapper',
+          start: 'top 82%',
+          toggleActions: 'play none none none',
+        },
+        opacity: 0,
+        y: 36,
+        duration: 0.8,
+        ease: 'power3.out',
+        onComplete: startTyping,
       });
-    }, 2400);
+    },
+    { scope: sectionRef }
+  );
 
-    return () => clearInterval(timer);
-  }, []);
+  function startTyping() {
+    // Réinitialise
+    setVisibleCount(0);
+    if (tlRef.current) tlRef.current.kill();
+
+    const tl = gsap.timeline({ repeat: -1, repeatDelay: 2 });
+    tlRef.current = tl;
+
+    mockLogs.forEach((_, i) => {
+      tl.call(
+        () => setVisibleCount(i + 1),
+        undefined,
+        i * 1.1
+      );
+    });
+
+    // Reset après la boucle
+    tl.call(() => setVisibleCount(0), undefined, mockLogs.length * 1.1 + 1.5);
+  }
 
   return (
-    <section className="px-4 sm:px-6 max-w-4xl mx-auto py-8 mb-24">
-      <div className="glass-panel rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
+    <section ref={sectionRef} className="px-4 sm:px-6 max-w-4xl mx-auto py-8 mb-24">
+      <div className="terminal-wrapper glass-panel rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
         {/* Terminal Header */}
         <div className="px-4 py-3 bg-black/60 border-b border-white/10 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -59,9 +88,13 @@ export default function LiveTerminalDemo() {
 
         {/* Terminal Content */}
         <div className="p-4 sm:p-5 bg-black/80 font-mono text-xs sm:text-sm min-h-[220px] max-h-[280px] overflow-y-auto flex flex-col gap-2">
-          {logs.map((log, index) => (
-            <div key={index} className="flex items-start gap-2.5 leading-relaxed">
-              <span className="text-neutral-500 text-[11px] sm:text-xs select-none">{log.time}</span>
+          {mockLogs.slice(0, visibleCount).map((log, index) => (
+            <div
+              key={index}
+              className="terminal-log-line flex items-start gap-2.5 leading-relaxed"
+              style={{ animation: 'fadeInLog 0.3s ease forwards' }}
+            >
+              <span className="text-neutral-500 text-[11px] sm:text-xs select-none flex-shrink-0">{log.time}</span>
               <span
                 className={`break-all ${
                   log.type === 'gold'
@@ -82,7 +115,7 @@ export default function LiveTerminalDemo() {
           </div>
         </div>
 
-        {/* Terminal Footer info */}
+        {/* Terminal Footer */}
         <div className="px-4 py-2.5 bg-black/40 border-t border-white/5 flex items-center justify-between text-[11px] text-neutral-400">
           <div className="flex items-center gap-1.5">
             <Shield className="w-3.5 h-3.5 text-emerald-400" />
@@ -91,6 +124,13 @@ export default function LiveTerminalDemo() {
           <span className="font-mono text-neutral-500">Node.js 26 • Baileys Engine</span>
         </div>
       </div>
+
+      <style>{`
+        @keyframes fadeInLog {
+          from { opacity: 0; transform: translateX(-8px); }
+          to   { opacity: 1; transform: translateX(0); }
+        }
+      `}</style>
     </section>
   );
 }

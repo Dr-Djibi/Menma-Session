@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { QrCode, KeyRound, FileCode2, LayoutDashboard, Home } from 'lucide-react';
+import { QrCode, KeyRound, FileCode2, Home } from 'lucide-react';
 
 export default function MobileBottomNav() {
   const pathname = usePathname();
@@ -12,7 +12,6 @@ export default function MobileBottomNav() {
     { href: '/pair', label: 'Code', icon: KeyRound },
     { href: '/qr', label: 'QR Scan', icon: QrCode },
     { href: '/env', label: '.ENV', icon: FileCode2 },
-    { href: '/dashboard', label: 'Stats', icon: LayoutDashboard },
   ];
 
   const handleNavClick = () => {
@@ -24,7 +23,7 @@ export default function MobileBottomNav() {
   };
 
   return (
-    <nav 
+    <nav
       aria-label="Navigation mobile rapide"
       className="md:hidden fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] left-3 right-3 z-50 glass-panel rounded-2xl p-1.5 shadow-2xl border border-white/10 backdrop-blur-xl"
     >
@@ -58,4 +57,3 @@ export default function MobileBottomNav() {
     </nav>
   );
 }
-
