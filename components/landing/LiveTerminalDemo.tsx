@@ -76,7 +76,7 @@ export default function LiveTerminalDemo() {
             <div className="h-4 w-px bg-white/10 mx-2" />
             <div className="flex items-center gap-1.5 text-xs font-mono text-neutral-300">
               <Terminal className="w-3.5 h-3.5 text-gold" />
-              <span>menma-protocol-live.log</span>
+              <span>menma-session.log</span>
             </div>
           </div>
 
@@ -119,9 +119,9 @@ export default function LiveTerminalDemo() {
         <div className="px-4 py-2.5 bg-black/40 border-t border-white/5 flex items-center justify-between text-[11px] text-neutral-400">
           <div className="flex items-center gap-1.5">
             <Shield className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Anti-mise en veille active (Self-Ping 4 min)</span>
+            <span>Maintien en ligne continu • Protocole Baileys</span>
           </div>
-          <span className="font-mono text-neutral-500">Node.js 26 • Baileys Engine</span>
+          <span className="font-mono text-neutral-500">Node.js • Baileys Engine</span>
         </div>
       </div>
 

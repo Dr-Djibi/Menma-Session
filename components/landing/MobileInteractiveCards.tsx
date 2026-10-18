@@ -68,10 +68,10 @@ export default function MobileInteractiveCards() {
     <section ref={sectionRef} className="px-4 sm:px-6 max-w-5xl mx-auto py-8 mb-20">
       <div className="cards-heading text-center mb-8">
         <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight mb-2">
-          Trois modes de connexion, zéro friction
+          Méthodes de connexion simples
         </h2>
         <p className="text-sm text-neutral-400 max-w-lg mx-auto">
-          Conçu spécialement pour smartphone : rapide, ergonomique et accessible sans ordinateur.
+          Générez votre session directement depuis votre téléphone ou un navigateur web.
         </p>
       </div>
 
@@ -84,19 +84,19 @@ export default function MobileInteractiveCards() {
                 <KeyRound className="w-5 h-5" />
               </div>
               <span className="text-[11px] font-mono uppercase px-2.5 py-1 rounded-full bg-gold/10 text-gold-light border border-gold/20 font-semibold">
-                Recommandé mobile
+                Simple & direct
               </span>
             </div>
 
             <h3 className="text-lg font-bold text-white mb-1.5">Code de Jumelage (Pairing)</h3>
             <p className="text-xs sm:text-sm text-neutral-400 mb-4 leading-relaxed">
-              Entrez simplement votre numéro WhatsApp. Recevez un code à 8 caractères à entrer directement dans WhatsApp &gt; Appareils connectés.
+              Entrez votre numéro WhatsApp avec l&apos;indicatif pays. Recevez un code à 8 chiffres à valider dans WhatsApp &gt; Appareils connectés.
             </p>
 
             <div className="p-3 rounded-xl bg-black/40 border border-white/10 mb-4 flex items-center justify-between">
               <div>
                 <span className="text-[10px] uppercase font-mono tracking-wider text-neutral-400 block mb-0.5">
-                  Code de démonstration
+                  Exemple de format
                 </span>
                 <span className="font-mono text-base font-bold text-gold tracking-widest">
                   MENMA-7749
@@ -105,7 +105,7 @@ export default function MobileInteractiveCards() {
               <button
                 onClick={copyDemoCode}
                 className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-gold/20 text-xs text-neutral-300 flex items-center gap-1.5 transition-colors touch-scale"
-                aria-label="Copier le code de démonstration"
+                aria-label="Copier l'exemple de code"
               >
                 {copiedDemo ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                 <span>{copiedDemo ? 'Copié' : 'Tester'}</span>
@@ -117,7 +117,7 @@ export default function MobileInteractiveCards() {
             href="/pair"
             className="w-full min-h-[46px] rounded-xl bg-gold/15 hover:bg-gold/25 active:scale-95 text-gold-light font-semibold text-xs tracking-wide border border-gold/30 flex items-center justify-center gap-1.5 transition-all touch-scale"
           >
-            <span>OBTENIR MON CODE PAIRING</span>
+            <span>GÉNÉRER UN CODE</span>
             <ArrowUpRight className="w-3.5 h-3.5" />
           </Link>
         </div>
@@ -130,13 +130,13 @@ export default function MobileInteractiveCards() {
                 <QrCode className="w-5 h-5" />
               </div>
               <span className="text-[11px] font-mono uppercase px-2.5 py-1 rounded-full bg-white/5 text-neutral-300 border border-white/10 font-medium">
-                Multi-device
+                Scan caméra
               </span>
             </div>
 
-            <h3 className="text-lg font-bold text-white mb-1.5">Scan QR Code Instantané</h3>
+            <h3 className="text-lg font-bold text-white mb-1.5">Scan QR Code</h3>
             <p className="text-xs sm:text-sm text-neutral-400 mb-4 leading-relaxed">
-              Scannez le QR Code en direct depuis WhatsApp pour lier votre session. Idéal pour scanner depuis un second écran ou une tablette.
+              Affichez le code QR et scannez-le avec votre application WhatsApp. Particulièrement pratique depuis un ordinateur ou une tablette.
             </p>
 
             <div className="p-3 rounded-xl bg-black/40 border border-white/10 mb-4 flex items-center gap-3">
@@ -145,8 +145,8 @@ export default function MobileInteractiveCards() {
                 <div className="absolute inset-x-0 h-0.5 bg-gold animate-pulse top-1/2 -translate-y-1/2 shadow-sm" />
               </div>
               <div>
-                <span className="text-xs font-semibold text-white block">Auto-rafraîchissement</span>
-                <span className="text-[11px] text-neutral-400 block">Flux PNG direct sans expiration brutale</span>
+                <span className="text-xs font-semibold text-white block">Mise à jour automatique</span>
+                <span className="text-[11px] text-neutral-400 block">QR code actualisé en continu</span>
               </div>
             </div>
           </div>
@@ -160,7 +160,7 @@ export default function MobileInteractiveCards() {
           </Link>
         </div>
 
-        {/* CARTE 3: GÉNÉRATEUR .ENV — pleine largeur */}
+        {/* CARTE 3: GÉNÉRATEUR .ENV */}
         <div className="interactive-card md:col-span-2 glass-panel rounded-2xl p-5 sm:p-6 border border-white/10 hover:border-gold/40 transition-colors flex flex-col justify-between">
           <div className="md:flex md:items-start md:gap-8">
             <div className="flex-1">
@@ -169,13 +169,13 @@ export default function MobileInteractiveCards() {
                   <FileCode2 className="w-5 h-5" />
                 </div>
                 <span className="text-[11px] font-mono uppercase px-2.5 py-1 rounded-full bg-blue-500/10 text-blue-300 border border-blue-500/20 font-medium">
-                  Assistant 4 étapes
+                  Configuration guidée
                 </span>
               </div>
 
-              <h3 className="text-lg font-bold text-white mb-1.5">Générateur de Configuration .ENV</h3>
+              <h3 className="text-lg font-bold text-white mb-1.5">Générateur de Fichier .ENV</h3>
               <p className="text-xs sm:text-sm text-neutral-400 mb-4 leading-relaxed">
-                Configurez tous les paramètres de votre bot (Session ID, Owner, Database, Chatbot, Anti-Delete) sans risquer d&apos;erreur de syntaxe.
+                Renseignez vos options (Session ID, numéro administrateur, base de données, etc.) et téléchargez votre fichier .env prêt à déployer.
               </p>
             </div>
 
@@ -196,11 +196,11 @@ export default function MobileInteractiveCards() {
                   </button>
                 ))}
               </div>
-              <p className="text-xs text-neutral-500 text-center mb-4">
-                {activeStep === 1 && 'Session ID & Owner WhatsApp'}
-                {activeStep === 2 && 'Base de données PostgreSQL'}
-                {activeStep === 3 && 'Chatbot AI & Anti-Delete'}
-                {activeStep === 4 && 'Génération & Export .env'}
+              <p className="text-xs text-neutral-400 text-center mb-4">
+                {activeStep === 1 && '1. Session ID & Numéro Owner'}
+                {activeStep === 2 && '2. Base de données PostgreSQL'}
+                {activeStep === 3 && '3. Options & Chatbot'}
+                {activeStep === 4 && '4. Exportation du fichier'}
               </p>
             </div>
           </div>
@@ -209,7 +209,7 @@ export default function MobileInteractiveCards() {
             href="/env"
             className="w-full min-h-[46px] rounded-xl bg-white/5 hover:bg-white/10 active:scale-95 text-white font-semibold text-xs tracking-wide border border-white/15 flex items-center justify-center gap-1.5 transition-all touch-scale"
           >
-            <span>GÉNÉRER MON .ENV</span>
+            <span>CRÉER MON FICHIER .ENV</span>
             <ArrowUpRight className="w-3.5 h-3.5 text-neutral-400" />
           </Link>
         </div>

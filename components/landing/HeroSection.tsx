@@ -4,7 +4,7 @@ import { useRef } from 'react';
 import Link from 'next/link';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
-import { QrCode, KeyRound, Sparkles, ArrowRight, ShieldCheck } from 'lucide-react';
+import { QrCode, KeyRound, Sparkles, ArrowRight, ShieldCheck, Smartphone } from 'lucide-react';
 
 gsap.registerPlugin(useGSAP);
 
@@ -17,27 +17,27 @@ export default function HeroSection() {
 
       tl.from('.hero-badge', {
         opacity: 0,
-        y: -20,
-        duration: 0.8,
+        y: -18,
+        duration: 0.7,
       })
         .from(
           '.hero-title-line',
           {
             opacity: 0,
-            y: 35,
-            duration: 1,
+            y: 30,
+            duration: 0.9,
             stagger: 0.15,
           },
-          '-=0.5'
+          '-=0.4'
         )
         .from(
           '.hero-desc',
           {
             opacity: 0,
-            y: 20,
-            duration: 0.8,
+            y: 18,
+            duration: 0.7,
           },
-          '-=0.6'
+          '-=0.5'
         )
         .from(
           '.hero-btn',
@@ -45,20 +45,20 @@ export default function HeroSection() {
             opacity: 0,
             scale: 0.95,
             y: 15,
-            duration: 0.7,
-            stagger: 0.12,
+            duration: 0.6,
+            stagger: 0.1,
           },
-          '-=0.5'
+          '-=0.4'
         )
         .from(
           '.hero-stat-pill',
           {
             opacity: 0,
             y: 10,
-            duration: 0.6,
-            stagger: 0.1,
+            duration: 0.5,
+            stagger: 0.08,
           },
-          '-=0.4'
+          '-=0.3'
         );
     },
     { scope: containerRef }
@@ -67,33 +67,33 @@ export default function HeroSection() {
   return (
     <section
       ref={containerRef}
-      className="relative pt-12 pb-16 md:pt-24 md:pb-28 px-4 sm:px-6 max-w-5xl mx-auto text-center overflow-hidden"
+      className="relative pt-12 pb-14 md:pt-20 md:pb-24 px-4 sm:px-6 max-w-5xl mx-auto text-center overflow-hidden"
     >
       {/* 1. Protocol Badge */}
       <div className="hero-badge inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-gold/10 border border-gold/30 mb-6">
-        <Sparkles className="w-3.5 h-3.5 text-gold animate-spin-slow" />
+        <Sparkles className="w-3.5 h-3.5 text-gold" />
         <span className="text-xs font-semibold tracking-wide text-gold-light uppercase">
-          Générateur de Session WhatsApp v2.0
+          Menma Session Generator
         </span>
       </div>
 
       {/* 2. Headline with Split Lines */}
       <h1 className="text-3xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-white mb-6 leading-[1.15]">
         <span className="hero-title-line block">
-          Connectez votre bot <span className="text-gold">Menma-MD</span>
+          Générez la session de votre bot <span className="text-gold">Menma-MD</span>
         </span>
         <span className="hero-title-line block text-neutral-300 font-medium text-2xl sm:text-4xl md:text-5xl mt-1">
-          en toute sécurité en quelques secondes
+          facilement depuis votre smartphone
         </span>
       </h1>
 
       {/* 3. Description */}
       <p className="hero-desc text-base sm:text-lg text-neutral-300 max-w-2xl mx-auto mb-9 leading-relaxed">
-        Générez votre Session ID officiel via <strong className="text-white font-semibold">Code de Couplage</strong> à 8 chiffres ou par <strong className="text-white font-semibold">Scan QR</strong> instantané sans déconnexion.
+        Associez votre compte WhatsApp à l&apos;aide d&apos;un <strong className="text-white font-semibold">Code de jumelage</strong> ou par <strong className="text-white font-semibold">Scan QR</strong> pour récupérer votre Session ID prêt à déployer.
       </p>
 
-      {/* 4. Action Buttons (Mobile-first, touch friendly, min-height 52px) */}
-      <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 max-w-md mx-auto mb-12">
+      {/* 4. Action Buttons */}
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 max-w-md mx-auto mb-10">
         <Link
           href="/pair"
           className="hero-btn w-full sm:w-auto min-h-[52px] px-6 py-3.5 rounded-xl bg-gold hover:bg-gold-light active:scale-95 text-dark-950 font-bold text-sm tracking-wide shadow-lg flex items-center justify-center gap-2.5 transition-all touch-scale"
@@ -116,15 +116,15 @@ export default function HeroSection() {
       <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 text-xs text-neutral-400">
         <div className="hero-stat-pill flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/5">
           <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-          <span>Chiffrement Baileys v7 End-to-End</span>
+          <span>Protocole Baileys</span>
         </div>
         <div className="hero-stat-pill flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/5">
           <span className="w-2 h-2 rounded-full bg-emerald-400" />
-          <span>Pastebin Encrypted Vault</span>
+          <span>Chiffrement de session</span>
         </div>
         <div className="hero-stat-pill flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 border border-white/5">
-          <span className="text-gold font-mono font-bold">0.4s</span>
-          <span>Délai de génération moyen</span>
+          <Smartphone className="w-3.5 h-3.5 text-gold" />
+          <span>Multi-appareils</span>
         </div>
       </div>
     </section>

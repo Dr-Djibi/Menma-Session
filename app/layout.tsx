@@ -5,8 +5,8 @@ import AmbientSpotlight from '@/components/ui/AmbientSpotlight';
 import MobileBottomNav from '@/components/ui/MobileBottomNav';
 
 export const metadata: Metadata = {
-  title: 'MENMA-MD | Session Protocol & Gateway',
-  description: 'Générateur officiel de Session WhatsApp pour le bot Menma-MD. Code de couplage instantané, scan QR haute performance, générateur .env et télémétrie.',
+  title: 'Menma Session Generator | WhatsApp Protocol',
+  description: 'Générateur de Session WhatsApp pour le bot Menma-MD. Code de jumelage, scan QR et configuration .env.',
   icons: {
     icon: '/favicon.ico',
   },
@@ -37,7 +37,7 @@ export default function RootLayout({
         <footer className="w-full border-t border-white/5 py-8 px-4 text-center text-xs text-neutral-400 relative z-10 mb-14 md:mb-0">
           <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
             <p>
-              © {new Date().getFullYear()} <strong className="text-neutral-300">Menma-MD Protocol</strong>. Tous droits réservés.
+              © {new Date().getFullYear()} <strong className="text-neutral-300">Menma Session Protocol</strong>. Tous droits réservés.
             </p>
             <p>
               Créé avec passion par{' '}
