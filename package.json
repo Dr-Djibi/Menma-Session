@@ -4,22 +4,42 @@
   "description": "Menma-MD Session Generator",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "node index.js",
+    "start:next": "next start"
   },
   "dependencies": {
+    "@gsap/react": "^2.1.2",
     "@whiskeysockets/baileys": "^7.0.0-rc11",
     "axios": "^1.7.0",
+    "clsx": "^2.1.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "fs-extra": "^11.3.0",
+    "gsap": "^3.15.0",
+    "lucide-react": "^1.59.0",
+    "next": "^16.4.2",
     "pastebin-js": "^1.0.6",
     "path": "^0.12.7",
     "pg": "^8.21.0",
     "pino": "^9.6.0",
     "qrcode": "^1.5.4",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
     "sequelize": "^6.37.8",
     "socket.io": "^4.8.1",
-    "sqlite3": "^6.0.1"
+    "sqlite3": "^6.0.1",
+    "tailwind-merge": "^3.7.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "autoprefixer": "^10.6.1",
+    "postcss": "^8.5.30",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^7.0.2"
   }
 }

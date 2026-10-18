@@ -1,0 +1,157 @@
+@import "tailwindcss";
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500;600&display=swap');
+
+:root {
+  --bg-dark: #0a0a0c;
+  --bg-card: rgba(16, 16, 20, 0.85);
+  --accent: #C8A84B;
+  --accent-light: #E2C474;
+  --accent-dim: #b8952c;
+  --accent-muted: rgba(200, 168, 75, 0.15);
+  --surface: rgba(18, 18, 22, 0.8);
+  --surface-hover: rgba(255, 255, 255, 0.05);
+  --border: rgba(255, 255, 255, 0.10);
+  --border-accent: rgba(200, 168, 75, 0.35);
+  --text: #f0ede8;
+  --text-dim: rgba(240, 237, 232, 0.70);
+  --text-muted: rgba(240, 237, 232, 0.50);
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background-color: var(--bg-dark);
+  color: var(--text);
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  overflow-x: hidden;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  touch-action: manipulation;
+}
+
+/* Smooth scrolling on mobile and desktop */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Ambient subtle background grid */
+.bg-mesh-pattern {
+  background-image: 
+    radial-gradient(ellipse 60% 50% at 50% 0%, rgba(200, 168, 75, 0.08) 0%, transparent 70%),
+    radial-gradient(circle at 10% 90%, rgba(200, 168, 75, 0.04) 0%, transparent 40%),
+    #0a0a0c;
+}
+
+/* Glassmorphism utility */
+.glass-panel {
+  background: rgba(16, 16, 22, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-panel-accent {
+  background: rgba(16, 16, 22, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-accent);
+}
+
+/* Mobile-first touch feedbacks */
+.touch-scale {
+  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.15s ease;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.touch-scale:active {
+  transform: scale(0.95);
+  opacity: 0.9;
+}
+
+/* Laser scan animation for QR code */
+@keyframes laserScan {
+  0% {
+    top: 5%;
+    opacity: 0.4;
+  }
+  50% {
+    top: 90%;
+    opacity: 1;
+  }
+  100% {
+    top: 5%;
+    opacity: 0.4;
+  }
+}
+
+.animate-laser-scan {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #C8A84B, #E2C474, #C8A84B, transparent);
+  box-shadow: 0 0 16px 3px rgba(200, 168, 75, 0.7);
+  animation: laserScan 2.4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Subtle pulse glow for mobile cards */
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(200, 168, 75, 0.25);
+  }
+  50% {
+    box-shadow: 0 0 20px 4px rgba(200, 168, 75, 0.4);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 2.5s infinite;
+}
+
+/* Shimmer effect for code generation loader */
+@keyframes shimmerWave {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.shimmer-box {
+  background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(200,168,75,0.12) 50%, rgba(255,255,255,0.03) 75%);
+  background-size: 200% 100%;
+  animation: shimmerWave 2s infinite;
+}
+
+/* Safe bottom spacing for mobile bottom navigation */
+.pb-mobile-nav {
+  padding-bottom: calc(5rem + env(safe-area-inset-bottom, 16px));
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(200, 168, 75, 0.25);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(200, 168, 75, 0.45);
+}
+
