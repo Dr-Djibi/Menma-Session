@@ -8,15 +8,8 @@ import Toast from '@/components/ui/Toast';
 export const metadata: Metadata = {
   title: 'Menma Session Generator | WhatsApp Protocol',
   description: 'Générateur de Session WhatsApp pour le bot Menma-MD. Code de jumelage, scan QR et configuration .env.',
-  manifest: '/manifest.json',
   icons: {
     icon: '/icon.svg',
-    apple: '/icon.svg',
-  },
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: 'black-translucent',
-    title: 'Menma Session',
   },
 };
 
