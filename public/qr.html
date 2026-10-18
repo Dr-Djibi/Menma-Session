@@ -41,15 +41,15 @@
             <!-- Section QR code -->
             <div id="qr-section">
                 <div class="qr-display" id="qr-container">
-                    <img id="qr-image" src="" alt="QR" style="width: 250px; height: 250px; display: block;">
+                    <img id="qr-image" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='250' height='250'%3E%3C/svg%3E" alt="QR Code de connexion WhatsApp" style="width: 250px; height: 250px; display: none;" role="img">
                     <div id="qr-loader"
-                        style="display: none; color: var(--accent); font-size: 2.5rem; margin: 30px auto;">
+                        style="display: flex; align-items: center; justify-content: center; color: var(--accent); font-size: 2.5rem; margin: 30px auto; width: 250px; height: 250px;">
                         <i class="fas fa-circle-notch fa-spin"></i>
                     </div>
                 </div>
 
                 <p id="qr-instruction"
-                    style="font-size: 0.85rem; color: var(--accent); margin-top: 25px; font-weight: 700; letter-spacing: 2px;">
+                    style="font-size: 0.85rem; color: var(--accent); margin-top: 25px; font-weight: 700; letter-spacing: 0.04em;">
                     SCANNEZ LE QR CODE
                 </p>
 
@@ -83,11 +83,15 @@
 
         function loadQR() {
             polling = true;
-            img.style.display = 'block';
-            qrLoader.style.display = 'none';
+            img.style.display = 'none';
+            qrLoader.style.display = 'flex';
             instruction.textContent = 'SCANNEZ LE QR CODE';
             instruction.style.color = 'var(--accent)';
             img.src = '/api/qr?id=' + sessionId;
+            img.onload = () => {
+                img.style.display = 'block';
+                qrLoader.style.display = 'none';
+            };
             checkStatus();
         }
 
@@ -124,12 +128,10 @@
 
         img.onerror = () => {
             img.style.display = 'none';
-            qrLoader.style.display = 'block';
+            qrLoader.style.display = 'flex';
             instruction.textContent = 'CHARGEMENT...';
             setTimeout(() => {
                 img.src = '/api/qr?id=' + sessionId + '&t=' + Date.now();
-                img.style.display = 'block';
-                qrLoader.style.display = 'none';
             }, 5000);
         };
 
