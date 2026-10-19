@@ -2,8 +2,13 @@
 
 import { useRef, useState } from 'react';
 import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
 import { ChevronDown, HelpCircle } from 'lucide-react';
+
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(ScrollTrigger, useGSAP);
+}
 
 interface FaqItem {
   q: string;
@@ -40,17 +45,39 @@ export default function FaqSection() {
   useGSAP(
     () => {
       gsap.fromTo(
-        '.faq-card',
-        { opacity: 0.5, y: 15 },
+        '.faq-header',
+        { opacity: 0, y: 25 },
         {
           opacity: 1,
           y: 0,
-          stagger: 0.08,
-          duration: 0.5,
-          ease: 'power2.out',
-          clearProps: 'all',
+          duration: 0.7,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: '.faq-header',
+            start: 'top 85%',
+          },
         }
       );
+
+      const cards = gsap.utils.toArray<HTMLElement>('.faq-card');
+      cards.forEach((card, index) => {
+        gsap.fromTo(
+          card,
+          { opacity: 0, y: 30 },
+          {
+            opacity: 1,
+            y: 0,
+            duration: 0.6,
+            delay: index * 0.08,
+            ease: 'power3.out',
+            scrollTrigger: {
+              trigger: card,
+              start: 'top 88%',
+              toggleActions: 'play none none none',
+            },
+          }
+        );
+      });
     },
     { scope: containerRef }
   );
@@ -61,15 +88,15 @@ export default function FaqSection() {
 
   return (
     <section ref={containerRef} className="px-4 sm:px-6 max-w-4xl mx-auto py-8 mb-12">
-      <div className="faq-header text-center mb-6">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold/10 border border-gold/30 text-gold text-xs font-semibold uppercase tracking-wider mb-2.5">
+      <div className="faq-header text-center mb-8">
+        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-gold/10 border border-gold/30 text-gold text-xs font-semibold uppercase tracking-wider mb-2.5">
           <HelpCircle className="w-3.5 h-3.5" />
           <span>Foire Aux Questions</span>
         </div>
         <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mb-2">
           Questions Fréquentes
         </h2>
-        <p className="text-xs sm:text-sm text-neutral-400 max-w-md mx-auto">
+        <p className="text-xs sm:text-sm text-neutral-400 max-w-md mx-auto leading-relaxed">
           Tout ce qu&apos;il faut savoir pour lier votre bot Menma-MD en toute sérénité.
         </p>
       </div>
@@ -87,7 +114,7 @@ export default function FaqSection() {
               <button
                 type="button"
                 onClick={() => toggleFaq(idx)}
-                className="w-full text-left p-5 flex items-center justify-between gap-4 select-none touch-scale"
+                className="w-full text-left p-5 flex items-center justify-between gap-4 select-none touch-scale focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
                 aria-expanded={isOpen}
               >
                 <span className="font-semibold text-sm sm:text-base text-white">

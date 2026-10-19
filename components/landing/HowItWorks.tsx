@@ -2,8 +2,13 @@
 
 import { useRef } from 'react';
 import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
 import { Smartphone, CheckCircle2 } from 'lucide-react';
+
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(ScrollTrigger, useGSAP);
+}
 
 const steps = [
   {
@@ -31,39 +36,63 @@ export default function HowItWorks() {
 
   useGSAP(
     () => {
-      // Animation douce sans cacher le contenu si le scroll est déjà passé
+      // Header Animation
       gsap.fromTo(
-        '.how-step-card',
-        { y: 15, opacity: 0.4 },
+        '.how-header',
+        { opacity: 0, y: 25 },
         {
-          y: 0,
           opacity: 1,
-          stagger: 0.1,
-          duration: 0.6,
-          ease: 'power2.out',
-          clearProps: 'all',
+          y: 0,
+          duration: 0.7,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: '.how-header',
+            start: 'top 85%',
+          },
         }
       );
+
+      // Cards Stagger Animation with ScrollTrigger
+      const cards = gsap.utils.toArray<HTMLElement>('.how-step-card');
+      cards.forEach((card, index) => {
+        gsap.fromTo(
+          card,
+          { opacity: 0, y: 35, scale: 0.96 },
+          {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            duration: 0.7,
+            delay: index * 0.15,
+            ease: 'power3.out',
+            scrollTrigger: {
+              trigger: card,
+              start: 'top 88%',
+              toggleActions: 'play none none none',
+            },
+          }
+        );
+      });
     },
     { scope: containerRef }
   );
 
   return (
-    <section ref={containerRef} className="px-4 sm:px-6 max-w-5xl mx-auto py-8 mb-10">
-      <div className="how-header text-center mb-6">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold/10 border border-gold/30 text-gold text-xs font-semibold uppercase tracking-wider mb-2.5">
+    <section ref={containerRef} className="px-4 sm:px-6 max-w-5xl mx-auto py-8 mb-12">
+      <div className="how-header text-center mb-8">
+        <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-gold/10 border border-gold/30 text-gold text-xs font-semibold uppercase tracking-wider mb-2.5">
           <Smartphone className="w-3.5 h-3.5" />
           <span>Guide Rapide</span>
         </div>
         <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mb-2">
           Comment ça fonctionne ?
         </h2>
-        <p className="text-xs sm:text-sm text-neutral-400 max-w-md mx-auto">
+        <p className="text-xs sm:text-sm text-neutral-400 max-w-md mx-auto leading-relaxed">
           Trois étapes simples pour initialiser votre bot Menma-MD sans configuration technique.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         {steps.map((step, idx) => (
           <div
             key={idx}
@@ -74,7 +103,7 @@ export default function HowItWorks() {
                 <span className="font-mono text-3xl font-black text-gold/40 group-hover:text-gold transition-colors">
                   {step.num}
                 </span>
-                <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-white/5 text-neutral-300 border border-white/10 font-medium">
+                <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-white/5 text-neutral-300 border border-white/10 font-semibold">
                   {step.badge}
                 </span>
               </div>
@@ -89,7 +118,7 @@ export default function HowItWorks() {
 
             <div className="pt-4 mt-4 border-t border-white/5 flex items-center gap-2 text-xs text-neutral-400">
               <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-              <span>Étape simple & guidée</span>
+              <span>Étape guidée & instantanée</span>
             </div>
           </div>
         ))}
