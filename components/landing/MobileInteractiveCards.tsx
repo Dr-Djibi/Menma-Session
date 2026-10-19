@@ -6,6 +6,8 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
 import { KeyRound, QrCode, FileCode2, Copy, Check, ArrowUpRight } from 'lucide-react';
+import TiltCard from '@/components/ui/TiltCard';
+import MagneticButton from '@/components/ui/MagneticButton';
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger, useGSAP);
@@ -18,67 +20,78 @@ export default function MobileInteractiveCards() {
 
   useGSAP(
     () => {
-      // Header Animation
+      // Header Animation with ScrollTrigger scrub
       gsap.fromTo(
         '.cards-heading',
-        { opacity: 0, y: 25 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.7,
-          ease: 'power3.out',
-          scrollTrigger: {
-            trigger: '.cards-heading',
-            start: 'top 85%',
-          },
-        }
-      );
-
-      // Card 1 Fade Left
-      gsap.fromTo(
-        '.card-pair',
-        { opacity: 0, x: -35 },
-        {
-          opacity: 1,
-          x: 0,
-          duration: 0.7,
-          ease: 'power3.out',
-          scrollTrigger: {
-            trigger: '.card-pair',
-            start: 'top 85%',
-          },
-        }
-      );
-
-      // Card 2 Fade Right
-      gsap.fromTo(
-        '.card-qr',
-        { opacity: 0, x: 35 },
-        {
-          opacity: 1,
-          x: 0,
-          duration: 0.7,
-          ease: 'power3.out',
-          scrollTrigger: {
-            trigger: '.card-qr',
-            start: 'top 85%',
-          },
-        }
-      );
-
-      // Card 3 Zoom In
-      gsap.fromTo(
-        '.card-env',
-        { opacity: 0, y: 35, scale: 0.95 },
+        { opacity: 0, y: 30, scale: 0.96 },
         {
           opacity: 1,
           y: 0,
           scale: 1,
-          duration: 0.7,
+          duration: 0.8,
           ease: 'power3.out',
           scrollTrigger: {
-            trigger: '.card-env',
+            trigger: '.cards-heading',
+            start: 'top 85%',
+            end: 'top 60%',
+            scrub: 0.6,
+          },
+        }
+      );
+
+      // Card 1 Parallax Scrub
+      gsap.fromTo(
+        '.card-pair-wrapper',
+        { opacity: 0, x: -40, scale: 0.95 },
+        {
+          opacity: 1,
+          x: 0,
+          scale: 1,
+          duration: 0.8,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: '.card-pair-wrapper',
+            start: 'top 85%',
+            end: 'top 45%',
+            scrub: 0.8,
+          },
+        }
+      );
+
+      // Card 2 Parallax Scrub
+      gsap.fromTo(
+        '.card-qr-wrapper',
+        { opacity: 0, x: 40, scale: 0.95 },
+        {
+          opacity: 1,
+          x: 0,
+          scale: 1,
+          duration: 0.8,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: '.card-qr-wrapper',
+            start: 'top 85%',
+            end: 'top 45%',
+            scrub: 0.8,
+          },
+        }
+      );
+
+      // Card 3 Scrub Timeline
+      gsap.fromTo(
+        '.card-env-wrapper',
+        { opacity: 0, y: 40, scale: 0.94 },
+        {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          duration: 0.8,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: '.card-env-wrapper',
             start: 'top 88%',
+            end: 'top 55%',
+            scrub: 0.8,
           },
         }
       );
@@ -93,157 +106,166 @@ export default function MobileInteractiveCards() {
   };
 
   return (
-    <section ref={sectionRef} className="px-4 sm:px-6 max-w-5xl mx-auto py-4 mb-12">
-      <div className="cards-heading text-center mb-6">
+    <section ref={sectionRef} className="px-4 sm:px-6 max-w-5xl mx-auto py-4 mb-12 relative z-10">
+      <div className="cards-heading text-center mb-8">
         <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mb-2">
           Méthodes de connexion simples
         </h2>
-        <p className="text-sm text-neutral-400 max-w-lg mx-auto leading-relaxed">
+        <p className="text-xs sm:text-sm text-neutral-400 max-w-lg mx-auto leading-relaxed">
           Générez votre session directement depuis votre téléphone ou un navigateur web.
         </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {/* CARTE 1: CODE PAIRING */}
-        <div className="card-pair interactive-card glass-panel rounded-2xl p-5 sm:p-6 border border-white/10 hover:border-gold/40 transition-colors flex flex-col justify-between shadow-lg">
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-10 h-10 rounded-xl bg-gold/15 border border-gold/30 flex items-center justify-center text-gold">
-                <KeyRound className="w-5 h-5" />
+        <div className="card-pair-wrapper">
+          <TiltCard className="p-5 sm:p-6 h-full flex flex-col justify-between shadow-xl border-white/10 hover:border-gold/40">
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-10 h-10 rounded-xl bg-gold/15 border border-gold/30 flex items-center justify-center text-gold">
+                  <KeyRound className="w-5 h-5" />
+                </div>
+                <span className="text-[11px] font-mono uppercase px-2.5 py-1 rounded-full bg-gold/10 text-gold-light border border-gold/20 font-semibold">
+                  Simple & direct
+                </span>
               </div>
-              <span className="text-[11px] font-mono uppercase px-2.5 py-1 rounded-full bg-gold/10 text-gold-light border border-gold/20 font-semibold">
-                Simple & direct
-              </span>
+
+              <h3 className="text-lg font-bold text-white mb-1.5">Code de Jumelage (Pairing)</h3>
+              <p className="text-xs sm:text-sm text-neutral-400 mb-4 leading-relaxed">
+                Entrez votre numéro WhatsApp avec l&apos;indicatif pays. Recevez un code à 8 chiffres à valider dans WhatsApp &gt; Appareils connectés.
+              </p>
+
+              <div className="p-3 rounded-xl bg-black/50 border border-white/10 mb-4 flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] uppercase font-mono tracking-wider text-neutral-400 block mb-0.5">
+                    Exemple de format
+                  </span>
+                  <span className="font-mono text-base font-bold text-gold tracking-widest">
+                    MENMA-7749
+                  </span>
+                </div>
+                <button
+                  onClick={copyDemoCode}
+                  className="min-h-[36px] px-3 py-1.5 rounded-lg bg-white/5 hover:bg-gold/20 text-xs text-neutral-300 flex items-center gap-1.5 transition-colors touch-scale focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold"
+                  aria-label="Copier l'exemple de code demo"
+                >
+                  {copiedDemo ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                  <span>{copiedDemo ? 'Copié' : 'Tester'}</span>
+                </button>
+              </div>
             </div>
 
-            <h3 className="text-lg font-bold text-white mb-1.5">Code de Jumelage (Pairing)</h3>
-            <p className="text-xs sm:text-sm text-neutral-400 mb-4 leading-relaxed">
-              Entrez votre numéro WhatsApp avec l&apos;indicatif pays. Recevez un code à 8 chiffres à valider dans WhatsApp &gt; Appareils connectés.
-            </p>
-
-            <div className="p-3 rounded-xl bg-black/40 border border-white/10 mb-4 flex items-center justify-between">
-              <div>
-                <span className="text-[10px] uppercase font-mono tracking-wider text-neutral-400 block mb-0.5">
-                  Exemple de format
-                </span>
-                <span className="font-mono text-base font-bold text-gold tracking-widest">
-                  MENMA-7749
-                </span>
-              </div>
-              <button
-                onClick={copyDemoCode}
-                className="min-h-[36px] px-3 py-1.5 rounded-lg bg-white/5 hover:bg-gold/20 text-xs text-neutral-300 flex items-center gap-1.5 transition-colors touch-scale focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold"
-                aria-label="Copier l'exemple de code demo"
+            <Link href="/pair" className="w-full">
+              <MagneticButton
+                ariaLabel="Aller au générateur de code de jumelage"
+                className="w-full min-h-[48px] rounded-xl bg-gold/15 hover:bg-gold/25 text-gold-light font-semibold text-xs tracking-wide border border-gold/30 flex items-center justify-center gap-2 transition-all"
               >
-                {copiedDemo ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                <span>{copiedDemo ? 'Copié' : 'Tester'}</span>
-              </button>
-            </div>
-          </div>
-
-          <Link
-            href="/pair"
-            className="w-full min-h-[48px] rounded-xl bg-gold/15 hover:bg-gold/25 active:scale-95 text-gold-light font-semibold text-xs tracking-wide border border-gold/30 flex items-center justify-center gap-2 transition-all touch-scale focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
-            aria-label="Aller au générateur de code de jumelage"
-          >
-            <span>GÉNÉRER UN CODE</span>
-            <ArrowUpRight className="w-4 h-4" />
-          </Link>
+                <span>GÉNÉRER UN CODE</span>
+                <ArrowUpRight className="w-4 h-4" />
+              </MagneticButton>
+            </Link>
+          </TiltCard>
         </div>
 
         {/* CARTE 2: SCAN QR */}
-        <div className="card-qr interactive-card glass-panel rounded-2xl p-5 sm:p-6 border border-white/10 hover:border-gold/40 transition-colors flex flex-col justify-between shadow-lg">
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <div className="w-10 h-10 rounded-xl bg-gold/15 border border-gold/30 flex items-center justify-center text-gold">
-                <QrCode className="w-5 h-5" />
-              </div>
-              <span className="text-[11px] font-mono uppercase px-2.5 py-1 rounded-full bg-white/5 text-neutral-300 border border-white/10 font-semibold">
-                Scan caméra
-              </span>
-            </div>
-
-            <h3 className="text-lg font-bold text-white mb-1.5">Scan QR Code</h3>
-            <p className="text-xs sm:text-sm text-neutral-400 mb-4 leading-relaxed">
-              Affichez le code QR et scannez-le avec votre application WhatsApp. Pratique si vous naviguez depuis un ordinateur ou une tablette.
-            </p>
-
-            <div className="p-3 rounded-xl bg-black/40 border border-white/10 mb-4 flex items-center gap-3">
-              <div className="relative w-12 h-12 bg-white/10 rounded-lg flex items-center justify-center border border-white/20 overflow-hidden flex-shrink-0">
-                <QrCode className="w-7 h-7 text-gold opacity-80" />
-                <div className="absolute inset-x-0 h-0.5 bg-gold animate-pulse top-1/2 -translate-y-1/2 shadow-sm" />
-              </div>
-              <div>
-                <span className="text-xs font-semibold text-white block">Mise à jour automatique</span>
-                <span className="text-[11px] text-neutral-400 block">QR code actualisé en continu</span>
-              </div>
-            </div>
-          </div>
-
-          <Link
-            href="/qr"
-            className="w-full min-h-[48px] rounded-xl bg-white/5 hover:bg-white/10 active:scale-95 text-white font-semibold text-xs tracking-wide border border-white/15 flex items-center justify-center gap-2 transition-all touch-scale focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
-            aria-label="Ouvrir le scanner QR code"
-          >
-            <span>OUVRIR LE SCANNER QR</span>
-            <ArrowUpRight className="w-4 h-4 text-neutral-400" />
-          </Link>
-        </div>
-
-        {/* CARTE 3: GÉNÉRATEUR .ENV */}
-        <div className="card-env interactive-card md:col-span-2 glass-panel rounded-2xl p-5 sm:p-6 border border-white/10 hover:border-gold/40 transition-colors flex flex-col justify-between shadow-lg">
-          <div className="md:flex md:items-start md:gap-8">
-            <div className="flex-1">
+        <div className="card-qr-wrapper">
+          <TiltCard className="p-5 sm:p-6 h-full flex flex-col justify-between shadow-xl border-white/10 hover:border-gold/40">
+            <div>
               <div className="flex items-center justify-between mb-4">
                 <div className="w-10 h-10 rounded-xl bg-gold/15 border border-gold/30 flex items-center justify-center text-gold">
-                  <FileCode2 className="w-5 h-5" />
+                  <QrCode className="w-5 h-5" />
                 </div>
-                <span className="text-[11px] font-mono uppercase px-2.5 py-1 rounded-full bg-blue-500/10 text-blue-300 border border-blue-500/20 font-semibold">
-                  Configuration guidée
+                <span className="text-[11px] font-mono uppercase px-2.5 py-1 rounded-full bg-white/5 text-neutral-300 border border-white/10 font-semibold">
+                  Scan caméra
                 </span>
               </div>
 
-              <h3 className="text-lg font-bold text-white mb-1.5">Générateur de Fichier .ENV</h3>
+              <h3 className="text-lg font-bold text-white mb-1.5">Scan QR Code</h3>
               <p className="text-xs sm:text-sm text-neutral-400 mb-4 leading-relaxed">
-                Renseignez vos options (Session ID, numéro administrateur, base de données, etc.) et téléchargez votre fichier .env prêt à déployer.
+                Affichez le code QR et scannez-le avec votre application WhatsApp. Pratique si vous naviguez depuis un ordinateur ou une tablette.
               </p>
-            </div>
 
-            {/* Stepper preview */}
-            <div className="flex-1">
-              <div className="flex items-center justify-between gap-1 p-2 rounded-xl bg-black/40 border border-white/10 mb-4">
-                {[1, 2, 3, 4].map((step) => (
-                  <button
-                    key={step}
-                    onClick={() => setActiveStep(step)}
-                    className={`flex-1 py-2 rounded-lg text-[11px] font-mono font-semibold transition-all touch-scale min-h-[36px] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold ${
-                      activeStep === step
-                        ? 'bg-gold text-dark-950 shadow-sm'
-                        : 'text-neutral-400 hover:text-white bg-white/5'
-                    }`}
-                    aria-label={`Aperçu étape ${step}`}
-                  >
-                    Étape {step}
-                  </button>
-                ))}
+              <div className="p-3 rounded-xl bg-black/50 border border-white/10 mb-4 flex items-center gap-3">
+                <div className="relative w-12 h-12 bg-white/10 rounded-lg flex items-center justify-center border border-white/20 overflow-hidden flex-shrink-0">
+                  <QrCode className="w-7 h-7 text-gold opacity-80" />
+                  <div className="absolute inset-x-0 h-0.5 bg-gold animate-pulse top-1/2 -translate-y-1/2 shadow-sm" />
+                </div>
+                <div>
+                  <span className="text-xs font-semibold text-white block">Mise à jour automatique</span>
+                  <span className="text-[11px] text-neutral-400 block">QR code actualisé en continu</span>
+                </div>
               </div>
-              <p className="text-xs text-neutral-300 text-center mb-4 font-medium">
-                {activeStep === 1 && '1. Authentification (Session & Owner)'}
-                {activeStep === 2 && '2. Identité (Nom, Préfixe, Timezone)'}
-                {activeStep === 3 && '3. Statuts & Likes automatiques'}
-                {activeStep === 4 && '4. Stickers & Base de données'}
-              </p>
             </div>
-          </div>
 
-          <Link
-            href="/env"
-            className="w-full min-h-[48px] rounded-xl bg-white/5 hover:bg-white/10 active:scale-95 text-white font-semibold text-xs tracking-wide border border-white/15 flex items-center justify-center gap-2 transition-all touch-scale focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
-            aria-label="Ouvrir le générateur de fichier .env"
-          >
-            <span>CRÉER MON FICHIER .ENV</span>
-            <ArrowUpRight className="w-4 h-4 text-neutral-400" />
-          </Link>
+            <Link href="/qr" className="w-full">
+              <MagneticButton
+                ariaLabel="Ouvrir le scanner QR code"
+                className="w-full min-h-[48px] rounded-xl bg-white/5 hover:bg-white/10 text-white font-semibold text-xs tracking-wide border border-white/15 flex items-center justify-center gap-2 transition-all"
+              >
+                <span>OUVRIR LE SCANNER QR</span>
+                <ArrowUpRight className="w-4 h-4 text-neutral-400" />
+              </MagneticButton>
+            </Link>
+          </TiltCard>
+        </div>
+
+        {/* CARTE 3: GÉNÉRATEUR .ENV */}
+        <div className="card-env-wrapper md:col-span-2">
+          <TiltCard className="p-5 sm:p-6 h-full flex flex-col justify-between shadow-xl border-white/10 hover:border-gold/40">
+            <div className="md:flex md:items-start md:gap-8">
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-10 h-10 rounded-xl bg-gold/15 border border-gold/30 flex items-center justify-center text-gold">
+                    <FileCode2 className="w-5 h-5" />
+                  </div>
+                  <span className="text-[11px] font-mono uppercase px-2.5 py-1 rounded-full bg-blue-500/10 text-blue-300 border border-blue-500/20 font-semibold">
+                    Configuration guidée
+                  </span>
+                </div>
+
+                <h3 className="text-lg font-bold text-white mb-1.5">Générateur de Fichier .ENV</h3>
+                <p className="text-xs sm:text-sm text-neutral-400 mb-4 leading-relaxed">
+                  Renseignez vos options (Session ID, numéro administrateur, base de données, etc.) et téléchargez votre fichier .env prêt à déployer.
+                </p>
+              </div>
+
+              {/* Stepper preview */}
+              <div className="flex-1">
+                <div className="flex items-center justify-between gap-1 p-2 rounded-xl bg-black/50 border border-white/10 mb-4">
+                  {[1, 2, 3, 4].map((step) => (
+                    <button
+                      key={step}
+                      onClick={() => setActiveStep(step)}
+                      className={`flex-1 py-2 rounded-lg text-[11px] font-mono font-semibold transition-all touch-scale min-h-[36px] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold ${
+                        activeStep === step
+                          ? 'bg-gold text-dark-950 shadow-sm'
+                          : 'text-neutral-400 hover:text-white bg-white/5'
+                      }`}
+                      aria-label={`Aperçu étape ${step}`}
+                    >
+                      Étape {step}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-xs text-neutral-300 text-center mb-4 font-medium">
+                  {activeStep === 1 && '1. Authentification (Session & Owner)'}
+                  {activeStep === 2 && '2. Identité (Nom, Préfixe, Timezone)'}
+                  {activeStep === 3 && '3. Statuts & Likes automatiques'}
+                  {activeStep === 4 && '4. Stickers & Base de données'}
+                </p>
+              </div>
+            </div>
+
+            <Link href="/env" className="w-full">
+              <MagneticButton
+                ariaLabel="Ouvrir le générateur de fichier .env"
+                className="w-full min-h-[48px] rounded-xl bg-white/5 hover:bg-white/10 text-white font-semibold text-xs tracking-wide border border-white/15 flex items-center justify-center gap-2 transition-all"
+              >
+                <span>CRÉER MON FICHIER .ENV</span>
+                <ArrowUpRight className="w-4 h-4 text-neutral-400" />
+              </MagneticButton>
+            </Link>
+          </TiltCard>
         </div>
       </div>
     </section>
