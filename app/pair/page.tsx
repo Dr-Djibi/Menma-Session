@@ -35,6 +35,7 @@ const QUICK_PREFIXES = [
 
 export default function PairPage() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const phoneInputRef = useRef<HTMLInputElement>(null);
   const [phoneNumber, setPhoneNumber] = useState('');
   const [status, setStatus] = useState<'idle' | 'generating' | 'code' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
@@ -228,21 +229,23 @@ export default function PairPage() {
           <form onSubmit={handleGetCode} className="space-y-4">
             {/* Quick Country Prefix Chips for Mobile */}
             <div>
-              <label className="text-[11px] font-mono uppercase tracking-wider text-neutral-400 block mb-2">
+              <span className="text-[11px] font-mono uppercase tracking-wider text-neutral-400 block mb-2">
                 Préfixes fréquents (toucher pour insérer) :
-              </label>
+              </span>
               <div className="flex gap-1.5 overflow-x-auto pb-2 scrollbar-none">
                 {QUICK_PREFIXES.map((item) => (
                   <button
                     type="button"
                     key={item.code}
+                    aria-label={`Insérer l'indicatif +${item.code} (${item.country})`}
                     onClick={() => {
                       setPhoneNumber(item.code);
                       triggerHaptic(10);
+                      phoneInputRef.current?.focus();
                     }}
-                    className="px-2.5 py-1 rounded-xl bg-white/5 hover:bg-gold/20 text-xs text-neutral-300 border border-white/10 flex items-center gap-1.5 flex-shrink-0 touch-scale transition-colors"
+                    className="px-2.5 py-1 rounded-xl bg-white/5 hover:bg-gold/20 focus-visible:ring-2 focus-visible:ring-gold focus-visible:outline-none text-xs text-neutral-300 border border-white/10 flex items-center gap-1.5 flex-shrink-0 touch-scale transition-colors"
                   >
-                    <span>{item.flag}</span>
+                    <span aria-hidden="true">{item.flag}</span>
                     <span className="font-mono font-semibold">+{item.code}</span>
                   </button>
                 ))}
@@ -259,6 +262,7 @@ export default function PairPage() {
               </label>
               <div className="relative">
                 <input
+                  ref={phoneInputRef}
                   id="phone-input"
                   type="tel"
                   inputMode="numeric"
@@ -314,7 +318,11 @@ export default function PairPage() {
             </div>
 
             {/* 8-character segmented visual boxes */}
-            <div className="py-2">
+            <div
+              className="py-2"
+              role="region"
+              aria-label={`Code de jumelage généré : ${pairCode}`}
+            >
               <div className="flex items-center justify-center gap-1.5 sm:gap-2">
                 {codeChars.map((char, index) => (
                   <div key={index} className="flex items-center">
