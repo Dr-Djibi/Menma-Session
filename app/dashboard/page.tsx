@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
 import {
   LayoutDashboard,
@@ -15,14 +16,15 @@ import {
   Globe2,
   Server,
   Smartphone,
-  Check,
   AlertCircle,
   Shield,
   Eye,
   EyeOff,
 } from 'lucide-react';
 
-gsap.registerPlugin(useGSAP);
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(ScrollTrigger, useGSAP);
+}
 
 interface BotData {
   session_id: string;
@@ -60,12 +62,25 @@ export default function DashboardPage() {
 
   useGSAP(
     () => {
-      gsap.from('.dash-animate', {
-        opacity: 0,
-        y: 20,
-        duration: 0.6,
-        stagger: 0.08,
-        ease: 'power3.out',
+      const elements = gsap.utils.toArray<HTMLElement>('.dash-animate');
+      elements.forEach((el, index) => {
+        gsap.fromTo(
+          el,
+          { opacity: 0, y: 20, scale: 0.98 },
+          {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            duration: 0.6,
+            delay: index * 0.08,
+            ease: 'power3.out',
+            scrollTrigger: {
+              trigger: el,
+              start: 'top 90%',
+              toggleActions: 'play none none none',
+            },
+          }
+        );
       });
     },
     { scope: containerRef }
@@ -199,6 +214,7 @@ export default function DashboardPage() {
         <Link
           href="/"
           className="inline-flex items-center gap-2 text-xs font-semibold text-neutral-400 hover:text-white transition-colors touch-scale"
+          aria-label="Retour à l'accueil"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>RETOUR À L&apos;ACCUEIL</span>
@@ -207,7 +223,7 @@ export default function DashboardPage() {
 
       {/* ── UN-AUTHENTICATED: PASSWORD MODAL ── */}
       {!isAuthenticated ? (
-        <div className="dash-animate max-w-md mx-auto glass-panel-accent rounded-3xl p-6 sm:p-8 text-center relative overflow-hidden shadow-2xl">
+        <div className="dash-animate max-w-md mx-auto glass-panel-accent rounded-3xl p-6 sm:p-8 text-center relative overflow-hidden shadow-2xl border border-white/10">
           <div className="w-14 h-14 rounded-2xl bg-gold/15 border border-gold/30 mx-auto flex items-center justify-center text-gold mb-4 shadow-lg">
             <Lock className="w-6 h-6" />
           </div>
@@ -215,25 +231,35 @@ export default function DashboardPage() {
           <h1 className="text-2xl font-extrabold text-white tracking-tight mb-1">
             Dashboard Télémétrie
           </h1>
-          <p className="text-xs text-neutral-400 mb-6">
-            Accès sécurisé réservé aux administrateurs MENMA-MD.
+          <p className="text-xs text-neutral-400 mb-6 leading-relaxed">
+            Accès réservé aux administrateurs de l&apos;infrastructure MENMA-MD.
           </p>
 
           <form onSubmit={handleLogin} className="space-y-4">
-            <div>
+            <div className="space-y-1 text-left">
+              <label
+                htmlFor="dash-password"
+                className="text-xs font-semibold text-neutral-300 block uppercase tracking-wide"
+              >
+                Mot de Passe
+              </label>
               <div className="relative">
                 <input
+                  id="dash-password"
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="Mot de passe administrateur"
+                  placeholder="Entrez le mot de passe admin"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full h-13 px-4 pr-11 rounded-2xl bg-black/50 border border-white/15 focus:border-gold text-white text-sm outline-none transition-all placeholder:text-neutral-600"
+                  className="w-full h-12 px-4 pr-11 rounded-xl bg-black/50 border border-white/15 focus:border-gold focus:ring-2 focus:ring-gold/30 text-white text-sm outline-none transition-all placeholder:text-neutral-600"
+                  aria-required="true"
+                  aria-label="Mot de passe d'administration"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-white p-1"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-white p-1 rounded-lg focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold"
+                  aria-label={showPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -250,7 +276,8 @@ export default function DashboardPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full min-h-[50px] rounded-2xl bg-gold hover:bg-gold-light active:scale-95 text-dark-950 font-bold text-xs tracking-wider shadow-lg flex items-center justify-center gap-2 transition-all touch-scale"
+              className="w-full min-h-[50px] rounded-2xl bg-gold hover:bg-gold-light active:scale-95 text-dark-950 font-bold text-xs tracking-wider shadow-lg flex items-center justify-center gap-2 transition-all touch-scale focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+              aria-label="Déverrouiller le tableau de bord"
             >
               {isSubmitting ? (
                 <RefreshCw className="w-4 h-4 animate-spin" />
@@ -274,14 +301,15 @@ export default function DashboardPage() {
                 </h1>
               </div>
               <p className="text-xs text-neutral-400 mt-0.5">
-                Surveillance de l&apos;infrastructure et état des bots déployés.
+                Surveillance globale et état en direct des bots enregistrés.
               </p>
             </div>
 
             <button
               onClick={refreshStats}
               disabled={isLoadingStats}
-              className="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/15 text-xs text-neutral-300 flex items-center gap-2 transition-all touch-scale"
+              className="min-h-[42px] px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/15 text-xs text-neutral-300 flex items-center gap-2 transition-all touch-scale focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+              aria-label="Actualiser les données de télémétrie"
             >
               <RefreshCw className={`w-3.5 h-3.5 text-gold ${isLoadingStats ? 'animate-spin' : ''}`} />
               <span>Actualiser</span>
@@ -290,7 +318,6 @@ export default function DashboardPage() {
 
           {/* ── METRIC STAT CARDS ── */}
           <div className="dash-animate grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-            {/* Total Bots */}
             <div className="glass-panel rounded-2xl p-4 border border-white/10">
               <span className="text-[11px] font-mono uppercase text-neutral-400 block mb-1">
                 Total Bots
@@ -300,7 +327,6 @@ export default function DashboardPage() {
               </span>
             </div>
 
-            {/* En Ligne */}
             <div className="glass-panel rounded-2xl p-4 border border-emerald-500/30 bg-emerald-500/5">
               <div className="flex items-center justify-between mb-1">
                 <span className="text-[11px] font-mono uppercase text-emerald-400">
@@ -313,7 +339,6 @@ export default function DashboardPage() {
               </span>
             </div>
 
-            {/* Taux Uptime */}
             <div className="glass-panel rounded-2xl p-4 border border-white/10">
               <span className="text-[11px] font-mono uppercase text-neutral-400 block mb-1">
                 Santé Réseau
@@ -325,7 +350,6 @@ export default function DashboardPage() {
               </span>
             </div>
 
-            {/* Pays Connectés */}
             <div className="glass-panel rounded-2xl p-4 border border-white/10">
               <span className="text-[11px] font-mono uppercase text-neutral-400 block mb-1">
                 Pays Détectés
@@ -342,24 +366,25 @@ export default function DashboardPage() {
               <Search className="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
-                placeholder="Rechercher par nom, numéro, pays..."
+                placeholder="Rechercher nom, numéro, pays..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full h-10 pl-9 pr-3 rounded-xl bg-black/40 border border-white/10 text-xs text-white placeholder:text-neutral-500 outline-none focus:border-gold"
+                className="w-full h-11 pl-9 pr-3 rounded-xl bg-black/40 border border-white/10 text-xs text-white placeholder:text-neutral-500 outline-none focus:border-gold focus:ring-1 focus:ring-gold/30 transition-all"
+                aria-label="Rechercher des bots"
               />
             </div>
 
-            {/* Filters */}
             <div className="flex items-center gap-1.5 w-full sm:w-auto overflow-x-auto">
               {(['all', 'online', 'offline'] as const).map((filter) => (
                 <button
                   key={filter}
                   onClick={() => setFilterOnline(filter)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold capitalize transition-all touch-scale ${
+                  className={`min-h-[36px] px-3.5 py-1.5 rounded-xl text-xs font-semibold capitalize transition-all touch-scale focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold ${
                     filterOnline === filter
-                      ? 'bg-gold text-dark-950 font-bold'
+                      ? 'bg-gold text-dark-950 font-bold shadow-md'
                       : 'bg-white/5 text-neutral-400 hover:text-white'
                   }`}
+                  aria-label={`Filtrer par : ${filter}`}
                 >
                   {filter === 'all' ? 'Tous' : filter === 'online' ? 'En ligne' : 'Hors ligne'}
                 </button>
@@ -367,7 +392,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* ── BOT CARDS (RESPONSIVE TOUCH LIST) ── */}
+          {/* ── BOT CARDS ── */}
           <div className="dash-animate space-y-3">
             {filteredBots.length === 0 ? (
               <div className="glass-panel rounded-2xl p-8 text-center border border-white/10">
@@ -387,9 +412,9 @@ export default function DashboardPage() {
                           bot.is_online ? 'bg-emerald-400 shadow-[0_0_8px_#34d399]' : 'bg-neutral-600'
                         }`}
                       />
-                      <h4 className="text-sm font-bold text-white">
+                      <h2 className="text-sm font-bold text-white">
                         {bot.owner_name || 'Inconnu'}
-                      </h4>
+                      </h2>
                       <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-white/5 text-neutral-300 border border-white/10">
                         +{bot.owner_number}
                       </span>
@@ -415,12 +440,12 @@ export default function DashboardPage() {
                     </div>
                   </div>
 
-                  {/* Actions */}
                   <div className="flex items-center gap-2 w-full sm:w-auto justify-end pt-2 sm:pt-0 border-t sm:border-t-0 border-white/5">
                     <button
                       onClick={() => handleDeleteBot(bot.session_id)}
                       disabled={deletingId === bot.session_id}
-                      className="px-3 py-1.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 text-xs font-semibold flex items-center gap-1.5 transition-colors touch-scale"
+                      className="min-h-[38px] px-3.5 py-1.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 text-xs font-semibold flex items-center gap-1.5 transition-colors touch-scale focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+                      aria-label={`Supprimer le bot ${bot.owner_name}`}
                     >
                       {deletingId === bot.session_id ? (
                         <RefreshCw className="w-3.5 h-3.5 animate-spin" />

@@ -2,8 +2,13 @@
 
 import { useRef } from 'react';
 import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
 import { Zap, ShieldCheck, Clock, Cpu } from 'lucide-react';
+
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(ScrollTrigger, useGSAP);
+}
 
 interface StatItem {
   target: number;
@@ -59,34 +64,43 @@ export default function StatsCounter() {
 
   useGSAP(
     () => {
-      gsap.fromTo(
-        '.stat-card',
-        { y: 15, opacity: 0.5 },
-        {
-          y: 0,
-          opacity: 1,
-          stagger: 0.08,
-          duration: 0.5,
-          ease: 'power2.out',
-          clearProps: 'all',
-        }
-      );
+      const cards = gsap.utils.toArray<HTMLElement>('.stat-card');
+
+      cards.forEach((card, index) => {
+        gsap.fromTo(
+          card,
+          { opacity: 0, y: 30, scale: 0.95 },
+          {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            duration: 0.6,
+            delay: index * 0.1,
+            ease: 'back.out(1.2)',
+            scrollTrigger: {
+              trigger: card,
+              start: 'top 88%',
+              toggleActions: 'play none none none',
+            },
+          }
+        );
+      });
     },
     { scope: containerRef }
   );
 
   return (
-    <section ref={containerRef} className="px-4 sm:px-6 max-w-5xl mx-auto py-4 mb-8">
+    <section ref={containerRef} className="px-4 sm:px-6 max-w-5xl mx-auto py-4 mb-10">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
         {stats.map((item, idx) => {
           const Icon = item.icon;
           return (
             <div
               key={idx}
-              className="stat-card glass-panel rounded-2xl p-4 sm:p-5 border border-white/10 flex flex-col justify-between hover:border-gold/30 transition-colors shadow-md"
+              className="stat-card glass-panel rounded-2xl p-4 sm:p-5 border border-white/10 flex flex-col justify-between hover:border-gold/40 transition-colors shadow-lg"
             >
               <div className="flex items-center justify-between mb-3">
-                <span className="p-2 rounded-xl bg-gold/10 text-gold inline-flex">
+                <span className="p-2.5 rounded-xl bg-gold/10 text-gold inline-flex border border-gold/20">
                   <Icon className="w-4 h-4" />
                 </span>
               </div>
@@ -94,7 +108,7 @@ export default function StatsCounter() {
                 <div className="font-mono text-2xl sm:text-3xl font-extrabold text-white tracking-tight mb-1">
                   {item.display}
                 </div>
-                <div className="text-xs font-semibold text-neutral-200 mb-0.5">{item.label}</div>
+                <div className="text-xs font-bold text-neutral-200 mb-0.5">{item.label}</div>
                 <div className="text-[11px] text-neutral-400 leading-snug">{item.desc}</div>
               </div>
             </div>

@@ -3,11 +3,13 @@
 import { useRef, useState } from 'react';
 import Link from 'next/link';
 import gsap from 'gsap';
-import { useGSAP } from '@gsap/react';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useGSAP } from '@gsap/react';
 import { KeyRound, QrCode, FileCode2, Copy, Check, ArrowUpRight } from 'lucide-react';
 
-gsap.registerPlugin(useGSAP, ScrollTrigger);
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(ScrollTrigger, useGSAP);
+}
 
 export default function MobileInteractiveCards() {
   const sectionRef = useRef<HTMLDivElement>(null);
@@ -16,29 +18,70 @@ export default function MobileInteractiveCards() {
 
   useGSAP(
     () => {
+      // Header Animation
       gsap.fromTo(
-        '.interactive-card',
-        { y: 15, opacity: 0.5 },
+        '.cards-heading',
+        { opacity: 0, y: 25 },
         {
-          y: 0,
           opacity: 1,
-          stagger: 0.1,
-          duration: 0.5,
-          ease: 'power2.out',
-          clearProps: 'all',
+          y: 0,
+          duration: 0.7,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: '.cards-heading',
+            start: 'top 85%',
+          },
         }
       );
 
-      // Hover magnetic effect sur les cartes (desktop)
-      document.querySelectorAll('.interactive-card').forEach((card) => {
-        const el = card as HTMLElement;
-        el.addEventListener('mouseenter', () => {
-          gsap.to(el, { y: -4, scale: 1.01, duration: 0.3, ease: 'power2.out' });
-        });
-        el.addEventListener('mouseleave', () => {
-          gsap.to(el, { y: 0, scale: 1, duration: 0.4, ease: 'power2.out' });
-        });
-      });
+      // Card 1 Fade Left
+      gsap.fromTo(
+        '.card-pair',
+        { opacity: 0, x: -35 },
+        {
+          opacity: 1,
+          x: 0,
+          duration: 0.7,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: '.card-pair',
+            start: 'top 85%',
+          },
+        }
+      );
+
+      // Card 2 Fade Right
+      gsap.fromTo(
+        '.card-qr',
+        { opacity: 0, x: 35 },
+        {
+          opacity: 1,
+          x: 0,
+          duration: 0.7,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: '.card-qr',
+            start: 'top 85%',
+          },
+        }
+      );
+
+      // Card 3 Zoom In
+      gsap.fromTo(
+        '.card-env',
+        { opacity: 0, y: 35, scale: 0.95 },
+        {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          duration: 0.7,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: '.card-env',
+            start: 'top 88%',
+          },
+        }
+      );
     },
     { scope: sectionRef }
   );
@@ -50,19 +93,19 @@ export default function MobileInteractiveCards() {
   };
 
   return (
-    <section ref={sectionRef} className="px-4 sm:px-6 max-w-5xl mx-auto py-4 mb-8">
-      <div className="cards-heading text-center mb-5">
-        <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight mb-2">
+    <section ref={sectionRef} className="px-4 sm:px-6 max-w-5xl mx-auto py-4 mb-12">
+      <div className="cards-heading text-center mb-6">
+        <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mb-2">
           Méthodes de connexion simples
         </h2>
-        <p className="text-sm text-neutral-400 max-w-lg mx-auto">
+        <p className="text-sm text-neutral-400 max-w-lg mx-auto leading-relaxed">
           Générez votre session directement depuis votre téléphone ou un navigateur web.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {/* CARTE 1: CODE PAIRING */}
-        <div className="interactive-card glass-panel rounded-2xl p-5 sm:p-6 border border-white/10 hover:border-gold/40 transition-colors flex flex-col justify-between">
+        <div className="card-pair interactive-card glass-panel rounded-2xl p-5 sm:p-6 border border-white/10 hover:border-gold/40 transition-colors flex flex-col justify-between shadow-lg">
           <div>
             <div className="flex items-center justify-between mb-4">
               <div className="w-10 h-10 rounded-xl bg-gold/15 border border-gold/30 flex items-center justify-center text-gold">
@@ -89,8 +132,8 @@ export default function MobileInteractiveCards() {
               </div>
               <button
                 onClick={copyDemoCode}
-                className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-gold/20 text-xs text-neutral-300 flex items-center gap-1.5 transition-colors touch-scale"
-                aria-label="Copier l'exemple de code"
+                className="min-h-[36px] px-3 py-1.5 rounded-lg bg-white/5 hover:bg-gold/20 text-xs text-neutral-300 flex items-center gap-1.5 transition-colors touch-scale focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold"
+                aria-label="Copier l'exemple de code demo"
               >
                 {copiedDemo ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                 <span>{copiedDemo ? 'Copié' : 'Tester'}</span>
@@ -100,28 +143,29 @@ export default function MobileInteractiveCards() {
 
           <Link
             href="/pair"
-            className="w-full min-h-[46px] rounded-xl bg-gold/15 hover:bg-gold/25 active:scale-95 text-gold-light font-semibold text-xs tracking-wide border border-gold/30 flex items-center justify-center gap-1.5 transition-all touch-scale"
+            className="w-full min-h-[48px] rounded-xl bg-gold/15 hover:bg-gold/25 active:scale-95 text-gold-light font-semibold text-xs tracking-wide border border-gold/30 flex items-center justify-center gap-2 transition-all touch-scale focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+            aria-label="Aller au générateur de code de jumelage"
           >
             <span>GÉNÉRER UN CODE</span>
-            <ArrowUpRight className="w-3.5 h-3.5" />
+            <ArrowUpRight className="w-4 h-4" />
           </Link>
         </div>
 
         {/* CARTE 2: SCAN QR */}
-        <div className="interactive-card glass-panel rounded-2xl p-5 sm:p-6 border border-white/10 hover:border-gold/40 transition-colors flex flex-col justify-between">
+        <div className="card-qr interactive-card glass-panel rounded-2xl p-5 sm:p-6 border border-white/10 hover:border-gold/40 transition-colors flex flex-col justify-between shadow-lg">
           <div>
             <div className="flex items-center justify-between mb-4">
               <div className="w-10 h-10 rounded-xl bg-gold/15 border border-gold/30 flex items-center justify-center text-gold">
                 <QrCode className="w-5 h-5" />
               </div>
-              <span className="text-[11px] font-mono uppercase px-2.5 py-1 rounded-full bg-white/5 text-neutral-300 border border-white/10 font-medium">
+              <span className="text-[11px] font-mono uppercase px-2.5 py-1 rounded-full bg-white/5 text-neutral-300 border border-white/10 font-semibold">
                 Scan caméra
               </span>
             </div>
 
             <h3 className="text-lg font-bold text-white mb-1.5">Scan QR Code</h3>
             <p className="text-xs sm:text-sm text-neutral-400 mb-4 leading-relaxed">
-              Affichez le code QR et scannez-le avec votre application WhatsApp. Particulièrement pratique depuis un ordinateur ou une tablette.
+              Affichez le code QR et scannez-le avec votre application WhatsApp. Pratique si vous naviguez depuis un ordinateur ou une tablette.
             </p>
 
             <div className="p-3 rounded-xl bg-black/40 border border-white/10 mb-4 flex items-center gap-3">
@@ -138,22 +182,23 @@ export default function MobileInteractiveCards() {
 
           <Link
             href="/qr"
-            className="w-full min-h-[46px] rounded-xl bg-white/5 hover:bg-white/10 active:scale-95 text-white font-semibold text-xs tracking-wide border border-white/15 flex items-center justify-center gap-1.5 transition-all touch-scale"
+            className="w-full min-h-[48px] rounded-xl bg-white/5 hover:bg-white/10 active:scale-95 text-white font-semibold text-xs tracking-wide border border-white/15 flex items-center justify-center gap-2 transition-all touch-scale focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+            aria-label="Ouvrir le scanner QR code"
           >
             <span>OUVRIR LE SCANNER QR</span>
-            <ArrowUpRight className="w-3.5 h-3.5 text-neutral-400" />
+            <ArrowUpRight className="w-4 h-4 text-neutral-400" />
           </Link>
         </div>
 
         {/* CARTE 3: GÉNÉRATEUR .ENV */}
-        <div className="interactive-card md:col-span-2 glass-panel rounded-2xl p-5 sm:p-6 border border-white/10 hover:border-gold/40 transition-colors flex flex-col justify-between">
+        <div className="card-env interactive-card md:col-span-2 glass-panel rounded-2xl p-5 sm:p-6 border border-white/10 hover:border-gold/40 transition-colors flex flex-col justify-between shadow-lg">
           <div className="md:flex md:items-start md:gap-8">
             <div className="flex-1">
               <div className="flex items-center justify-between mb-4">
                 <div className="w-10 h-10 rounded-xl bg-gold/15 border border-gold/30 flex items-center justify-center text-gold">
                   <FileCode2 className="w-5 h-5" />
                 </div>
-                <span className="text-[11px] font-mono uppercase px-2.5 py-1 rounded-full bg-blue-500/10 text-blue-300 border border-blue-500/20 font-medium">
+                <span className="text-[11px] font-mono uppercase px-2.5 py-1 rounded-full bg-blue-500/10 text-blue-300 border border-blue-500/20 font-semibold">
                   Configuration guidée
                 </span>
               </div>
@@ -164,24 +209,25 @@ export default function MobileInteractiveCards() {
               </p>
             </div>
 
-            {/* Stepper micro-preview */}
+            {/* Stepper preview */}
             <div className="flex-1">
               <div className="flex items-center justify-between gap-1 p-2 rounded-xl bg-black/40 border border-white/10 mb-4">
                 {[1, 2, 3, 4].map((step) => (
                   <button
                     key={step}
                     onClick={() => setActiveStep(step)}
-                    className={`flex-1 py-1.5 rounded-lg text-[11px] font-mono font-semibold transition-all touch-scale ${
+                    className={`flex-1 py-2 rounded-lg text-[11px] font-mono font-semibold transition-all touch-scale min-h-[36px] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gold ${
                       activeStep === step
                         ? 'bg-gold text-dark-950 shadow-sm'
                         : 'text-neutral-400 hover:text-white bg-white/5'
                     }`}
+                    aria-label={`Aperçu étape ${step}`}
                   >
                     Étape {step}
                   </button>
                 ))}
               </div>
-              <p className="text-xs text-neutral-400 text-center mb-4">
+              <p className="text-xs text-neutral-300 text-center mb-4 font-medium">
                 {activeStep === 1 && '1. Authentification (Session & Owner)'}
                 {activeStep === 2 && '2. Identité (Nom, Préfixe, Timezone)'}
                 {activeStep === 3 && '3. Statuts & Likes automatiques'}
@@ -192,10 +238,11 @@ export default function MobileInteractiveCards() {
 
           <Link
             href="/env"
-            className="w-full min-h-[46px] rounded-xl bg-white/5 hover:bg-white/10 active:scale-95 text-white font-semibold text-xs tracking-wide border border-white/15 flex items-center justify-center gap-1.5 transition-all touch-scale"
+            className="w-full min-h-[48px] rounded-xl bg-white/5 hover:bg-white/10 active:scale-95 text-white font-semibold text-xs tracking-wide border border-white/15 flex items-center justify-center gap-2 transition-all touch-scale focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+            aria-label="Ouvrir le générateur de fichier .env"
           >
             <span>CRÉER MON FICHIER .ENV</span>
-            <ArrowUpRight className="w-3.5 h-3.5 text-neutral-400" />
+            <ArrowUpRight className="w-4 h-4 text-neutral-400" />
           </Link>
         </div>
       </div>
