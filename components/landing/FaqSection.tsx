@@ -113,9 +113,11 @@ export default function FaqSection() {
             >
               <button
                 type="button"
+                id={`faq-button-${idx}`}
                 onClick={() => toggleFaq(idx)}
                 className="w-full text-left p-5 flex items-center justify-between gap-4 select-none touch-scale focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
                 aria-expanded={isOpen}
+                aria-controls={`faq-answer-${idx}`}
               >
                 <span className="font-semibold text-sm sm:text-base text-white">
                   {item.q}
@@ -130,7 +132,12 @@ export default function FaqSection() {
               </button>
 
               {isOpen && (
-                <div className="px-5 pb-5 pt-0 text-xs sm:text-sm text-neutral-300 leading-relaxed border-t border-white/5 mt-1 pt-3">
+                <div
+                  id={`faq-answer-${idx}`}
+                  role="region"
+                  aria-labelledby={`faq-button-${idx}`}
+                  className="px-5 pb-5 pt-0 text-xs sm:text-sm text-neutral-300 leading-relaxed border-t border-white/5 mt-1 pt-3"
+                >
                   {item.a}
                 </div>
               )}
