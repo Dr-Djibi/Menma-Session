@@ -3,3 +3,7 @@
 ## 2025-05-18 - Quick Country Prefix Chips Input Auto-Focus & Screen Reader Labelling
 **Learning:** In mobile-first pairing pages, tapping quick prefix chips without auto-focusing the input forces users to perform an additional manual tap to place the cursor in the input field. Furthermore, emoji/code chip buttons lack descriptive context for screen reader users.
 **Action:** Always auto-focus the target input when selecting preset chip options and provide descriptive `aria-label` attributes containing the full country name and code.
+
+## 2025-05-19 - 3D Particle Globe Landmass Mapping & Canvas Accessibility
+**Learning:** Pure mathematical particle spheres lack geographical context and fail to convey a "world map" representation to users. Sampling grid particles against latitude/longitude continent coordinates transforms abstract particle spheres into recognizable 3D Earth maps. Adding `role="img"` and a descriptive `aria-label` to WebGL `<canvas>` elements ensures screen readers convey the visual context accurately.
+**Action:** Use latitude/longitude landmass coordinate sampling for 3D globe visualizations, and always provide explicit `role="img"` and descriptive `aria-label` tags on WebGL canvas elements.
