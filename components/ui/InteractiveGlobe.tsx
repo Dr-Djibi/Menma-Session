@@ -32,6 +32,27 @@ function latLongToVector3(lat: number, lon: number, radius: number) {
   return new THREE.Vector3(x, y, z);
 }
 
+// Check if latitude/longitude falls on Earth's main landmasses/continents
+function isLand(lat: number, lon: number): boolean {
+  if (lat < -60) return true; // Antarctica
+  if (lat >= 15 && lat <= 72 && lon >= -170 && lon <= -50) {
+    if (lat < 30 && lon > -85) return false;
+    return true; // North America
+  }
+  if (lat >= 7 && lat < 15 && lon >= -110 && lon <= -60) return true; // Central America
+  if (lat >= -56 && lat <= 13 && lon >= -82 && lon <= -34) return true; // South America
+  if (lat >= 35 && lat <= 71 && lon >= -10 && lon <= 42) return true; // Europe
+  if (lat >= -35 && lat <= 37 && lon >= -18 && lon <= 51) return true; // Africa
+  if (lat >= -26 && lat <= -12 && lon >= 43 && lon <= 51) return true; // Madagascar
+  if (lat >= 5 && lat <= 75 && lon >= 42 && lon <= 180) return true; // Asia
+  if (lat >= -10 && lat <= 20 && lon >= 95 && lon <= 140) return true; // SE Asia & Indonesia
+  if (lat >= 30 && lat <= 46 && lon >= 128 && lon <= 146) return true; // Japan
+  if (lat >= -42 && lat <= -10 && lon >= 112 && lon <= 154) return true; // Australia
+  if (lat >= -47 && lat <= -34 && lon >= 165 && lon <= 178) return true; // New Zealand
+  if (lat >= 60 && lat <= 83 && lon >= -73 && lon <= -12) return true; // Greenland
+  return false;
+}
+
 // Function to generate curved arc points between two coordinates
 function createCurveArc(start: THREE.Vector3, end: THREE.Vector3, globeRadius: number) {
   const distance = start.distanceTo(end);
@@ -87,25 +108,27 @@ export default function InteractiveGlobe() {
     const globeMesh = new THREE.Mesh(sphereGeo, sphereMat);
     globeGroup.add(globeMesh);
 
-    // 3. Dots Grid for Holographic Earth Effect
-    const dotCount = 1800;
-    const dotGeo = new THREE.BufferGeometry();
-    const dotPositions = new Float32Array(dotCount * 3);
+    // 3. Dots Grid for Holographic 3D Earth Map Effect
+    const dotPositionsList: number[] = [];
+    const step = 2.4;
 
-    for (let i = 0; i < dotCount; i++) {
-      const phi = Math.acos(-1 + (2 * i) / dotCount);
-      const theta = Math.sqrt(dotCount * Math.PI) * phi;
-
-      const x = GLOBE_RADIUS * 1.01 * Math.cos(theta) * Math.sin(phi);
-      const y = GLOBE_RADIUS * 1.01 * Math.sin(theta) * Math.sin(phi);
-      const z = GLOBE_RADIUS * 1.01 * Math.cos(phi);
-
-      dotPositions[i * 3] = x;
-      dotPositions[i * 3 + 1] = y;
-      dotPositions[i * 3 + 2] = z;
+    for (let lat = -88; lat <= 88; lat += step) {
+      for (let lon = -180; lon <= 180; lon += step) {
+        if (isLand(lat, lon)) {
+          const vec = latLongToVector3(lat, lon, GLOBE_RADIUS * 1.01);
+          dotPositionsList.push(vec.x, vec.y, vec.z);
+        } else if (Math.random() < 0.035) {
+          const vec = latLongToVector3(lat, lon, GLOBE_RADIUS * 1.01);
+          dotPositionsList.push(vec.x, vec.y, vec.z);
+        }
+      }
     }
 
-    dotGeo.setAttribute('position', new THREE.BufferAttribute(dotPositions, 3));
+    const dotGeo = new THREE.BufferGeometry();
+    dotGeo.setAttribute(
+      'position',
+      new THREE.Float32BufferAttribute(dotPositionsList, 3)
+    );
     const dotMat = new THREE.PointsMaterial({
       color: 0xeab308, // Gold theme color
       size: 0.022,
@@ -294,10 +317,15 @@ export default function InteractiveGlobe() {
       ref={containerRef}
       className="relative w-full h-[300px] sm:h-[400px] md:h-[480px] flex items-center justify-center overflow-hidden touch-none select-none"
     >
-      <canvas ref={canvasRef} className="w-full h-full cursor-grab active:cursor-grabbing" />
+      <canvas
+        ref={canvasRef}
+        role="img"
+        aria-label="Globe 3D interactif de la Terre représentant le réseau mondial Menma-MD"
+        className="w-full h-full cursor-grab active:cursor-grabbing"
+      />
 
       <div className="absolute bottom-2 left-1/2 -translate-x-1/2 pointer-events-none flex items-center gap-2 px-3.5 py-1 rounded-full bg-black/60 backdrop-blur-md border border-gold/30 text-[10px] font-mono text-gold-light uppercase tracking-wider shadow-lg">
-        <span className="w-1.5 h-1.5 rounded-full bg-gold animate-ping" />
+        <span className="w-1.5 h-1.5 rounded-full bg-gold animate-ping" aria-hidden="true" />
         <span>Inclinez & faites pivoter le globe 3D</span>
       </div>
     </div>
